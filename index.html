@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seoul Grill 199 - Order Online</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background1-UAcGhZazx6BsYR7ZmAkJ8LCvNIoq2C.png" type="image/png">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background1-UAcGhZazx6BsYR7ZmAkJ8LCvNIoq2C.png" alt="Seoul Grill 199 Logo" class="logo">
+            </div>
+            <h1>Seoul Grill 199</h1>
+            <div class="cart-container">
+                <button id="cart-button">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cart-count">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="menu-container">
+            <div class="menu-item">
+                <div class="image-container">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/FamilysetA.jpg-1clVI1axDXP8XKXp7e41zzD5Q9hUgu.jpeg" alt="Family Set A">
+                    <button class="order-button" data-id="setA" data-name="Family Set A" data-price="900">ORDER NOW</button>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="image-container">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/FamilysetB.jpg-abX3ztc3BUWXHe65k7A0D9qbkPaaOn.jpeg" alt="Family Set B">
+                    <button class="order-button" data-id="setB" data-name="Family Set B" data-price="1260">ORDER NOW</button>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="image-container">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/FamilysetC.jpg-F7HJt9mf7j8px4ePo3DexwlBuQQ5Vs.jpeg" alt="Family Set C">
+                    <button class="order-button" data-id="setC" data-name="Family Set C" data-price="1410">ORDER NOW</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="track-order-section">
+            <h2>Track Your Order</h2>
+            <div class="track-order-form">
+                <input type="text" id="order-id-input" placeholder="Enter your Order ID">
+                <button id="track-order-btn">Track Order</button>
+            </div>
+            <div id="order-status" class="order-status"></div>
+        </div>
+    </main>
+
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Your Order</h2>
+            <div id="cart-items"></div>
+            <div class="cart-total">
+                <strong>Total: ₱<span id="cart-total">0.00</span></strong>
+            </div>
+            <div class="cart-actions">
+                <button id="clear-cart">Clear Cart</button>
+                <button id="checkout">Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Complete Your Order</h2>
+            <form id="checkout-form">
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number:</label>
+                    <input type="tel" id="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">Delivery Address:</label>
+                    <textarea id="address" required></textarea>
+                </div>
+                <button type="submit">Place Order</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <h2>Order Confirmed!</h2>
+            <p>Thank you for your order. Your delicious Korean BBQ will be delivered soon!</p>
+            <p>Order #: <span id="order-number"></span></p>
+            <div class="receipt-container">
+                <canvas id="receipt-canvas" width="300" height="200"></canvas>
+                <a id="download-receipt" class="download-btn">Download Receipt</a>
+            </div>
+            <button id="close-confirmation">OK</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>Seoul Grill 199. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

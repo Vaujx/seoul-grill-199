@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Samgyupsal Ordering System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Samgyupsal House</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Menu</a></li>
+                    <li><a href="cart.html">Cart <span id="cart-count">0</span></a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="checkout-section">
+            <h2>Checkout</h2>
+            
+            <div class="checkout-container">
+                <div class="order-summary">
+                    <h3>Order Summary</h3>
+                    <div id="checkout-items">
+                        <!-- Checkout items will be loaded from JavaScript -->
+                    </div>
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="checkout-subtotal">₱0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Delivery Fee:</span>
+                        <span id="checkout-delivery-fee">₱50.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span id="checkout-total">₱0.00</span>
+                    </div>
+                </div>
+                
+                <div class="checkout-form">
+                    <h3>Delivery Information</h3>
+                    <form id="order-form">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">Delivery Address</label>
+                            <textarea id="address" name="address" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment">Payment Method</label>
+                            <select id="payment" name="payment" required>
+                                <option value="">Select payment method</option>
+                                <option value="cash">Cash on Delivery</option>
+                                <option value="card">Credit/Debit Card</option>
+                                <option value="gcash">GCash</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="notes">Special Instructions (Optional)</label>
+                            <textarea id="notes" name="notes"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">Place Order</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Samgyupsal House. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div id="order-confirmation" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Order Confirmed!</h2>
+            <p>Your order has been successfully placed.</p>
+            <p>Order #: <span id="order-number"></span></p>
+            <p>Estimated delivery time: 30-45 minutes</p>
+            <button id="back-to-menu" class="btn-primary">Back to Menu</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
