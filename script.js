@@ -16,30 +16,15 @@ let adminSettings = {
 // Initialize cart from localStorage or create empty cart
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-// DOM elements
-const cartButton = document.getElementById('cart-button');
-const cartModal = document.getElementById('cart-modal');
-const checkoutModal = document.getElementById('checkout-modal');
-const confirmationModal = document.getElementById('confirmation-modal');
-const cartItems = document.getElementById('cart-items');
-const cartTotal = document.getElementById('cart-total');
-const cartCount = document.getElementById('cart-count');
-const clearCartButton = document.getElementById('clear-cart');
-const checkoutButton = document.getElementById('checkout');
-const closeButtons = document.querySelectorAll('.close');
-const orderButtons = document.querySelectorAll('.order-button');
-const checkoutForm = document.getElementById('checkout-form');
-const closeConfirmation = document.getElementById('close-confirmation');
-const orderNumber = document.getElementById('order-number');
-const trackOrderBtn = document.getElementById('track-order-btn');
-const orderIdInput = document.getElementById('order-id-input');
-const orderStatus = document.getElementById('order-status');
-const receiptCanvas = document.getElementById('receipt-canvas');
-const downloadReceiptBtn = document.getElementById('download-receipt');
-const logoContainer = document.querySelector('.logo-container');
+// DOM elements - using functions to get elements to avoid null references if DOM isn't fully loaded
+const getElement = (id) => document.getElementById(id);
+const getElements = (selector) => document.querySelectorAll(selector);
 
 // Update cart count in header
 function updateCartCount() {
+    const cartCount = getElement('cart-count');
+    if (!cartCount) return;
+    
     const totalItems = cart.length;
     cartCount.textContent = totalItems;
 }
@@ -56,6 +41,10 @@ function calculateTotal() {
 
 // Render cart items
 function renderCart() {
+    const cartItems = getElement('cart-items');
+    const cartTotal = getElement('cart-total');
+    if (!cartItems || !cartTotal) return;
+    
     if (cart.length === 0) {
         cartItems.innerHTML = '<p>Your cart is empty</p>';
         cartTotal.textContent = '0.00';
@@ -240,7 +229,10 @@ async function findOrderById(orderId) {
 
 // Generate receipt image
 function generateReceiptImage(order) {
-    const canvas = receiptCanvas;
+    const canvas = getElement('receipt-canvas');
+    const downloadReceiptBtn = getElement('download-receipt');
+    if (!canvas || !downloadReceiptBtn) return;
+    
     const ctx = canvas.getContext('2d');
     
     // Clear canvas
@@ -285,6 +277,9 @@ function generateReceiptImage(order) {
 
 // Track order
 async function trackOrder(orderId) {
+    const orderStatus = getElement('order-status');
+    if (!orderStatus) return;
+    
     orderStatus.innerHTML = '';
     orderStatus.className = 'order-status';
     
@@ -410,7 +405,8 @@ async function changeAdminPassword(newPassword) {
 
 // Update UI based on maintenance mode
 function updateMaintenanceUI() {
-    const maintenanceBanner = document.getElementById('maintenance-banner');
+    const maintenanceBanner = getElement('maintenance-banner');
+    const orderButtons = getElements('.order-button');
     
     if (adminSettings.maintenanceMode === 1) {
         // Create maintenance banner if it doesn't exist
@@ -449,8 +445,9 @@ function updateMaintenanceUI() {
 // Create admin login modal
 function createAdminLoginModal() {
     // Check if modal already exists
-    if (document.getElementById('admin-login-modal')) {
-        document.getElementById('admin-login-modal').style.display = 'block';
+    const existingModal = getElement('admin-login-modal');
+    if (existingModal) {
+        existingModal.style.display = 'block';
         return;
     }
     
@@ -477,26 +474,33 @@ function createAdminLoginModal() {
     
     // Add event listeners
     const closeBtn = adminLoginModal.querySelector('.close');
-    const loginForm = document.getElementById('admin-login-form');
+    const loginForm = getElement('admin-login-form');
     
-    closeBtn.addEventListener('click', () => {
-        adminLoginModal.style.display = 'none';
-    });
-    
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const password = document.getElementById('admin-password').value;
-        
-        console.log("Entered password:", password);
-        console.log("Current admin password:", adminSettings.password);
-        
-        if (password === adminSettings.password || password === "123") {
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
             adminLoginModal.style.display = 'none';
-            createAdminPanel();
-        } else {
-            alert('Incorrect password');
-        }
-    });
+        });
+    }
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const passwordInput = getElement('admin-password');
+            if (!passwordInput) return;
+            
+            const password = passwordInput.value;
+            
+            console.log("Entered password:", password);
+            console.log("Current admin password:", adminSettings.password);
+            
+            if (password === adminSettings.password || password === "123") {
+                adminLoginModal.style.display = 'none';
+                createAdminPanel();
+            } else {
+                alert('Incorrect password');
+            }
+        });
+    }
     
     // Close modal when clicking outside
     window.addEventListener('click', (event) => {
@@ -512,8 +516,9 @@ function createAdminLoginModal() {
 // Create admin panel
 function createAdminPanel() {
     // Check if panel already exists
-    if (document.getElementById('admin-panel-modal')) {
-        document.getElementById('admin-panel-modal').style.display = 'block';
+    const existingPanel = getElement('admin-panel-modal');
+    if (existingPanel) {
+        existingPanel.style.display = 'block';
         return;
     }
     
@@ -559,46 +564,58 @@ function createAdminPanel() {
     
     // Add event listeners
     const closeBtn = adminPanelModal.querySelector('.close');
-    const maintenanceToggle = document.getElementById('maintenance-toggle');
-    const changePasswordForm = document.getElementById('change-password-form');
+    const maintenanceToggle = getElement('maintenance-toggle');
+    const changePasswordForm = getElement('change-password-form');
     
-    closeBtn.addEventListener('click', () => {
-        adminPanelModal.style.display = 'none';
-    });
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            adminPanelModal.style.display = 'none';
+        });
+    }
     
-    maintenanceToggle.addEventListener('change', async () => {
-        const isChecked = maintenanceToggle.checked;
-        const success = await toggleMaintenanceMode(isChecked ? 1 : 0);
-        
-        if (success) {
-            document.querySelector('.toggle-label').textContent = `Maintenance Mode is ${isChecked ? 'ON' : 'OFF'}`;
-        } else {
-            // Revert toggle if save failed
-            maintenanceToggle.checked = !isChecked;
-            alert('Failed to update maintenance mode');
-        }
-    });
+    if (maintenanceToggle) {
+        maintenanceToggle.addEventListener('change', async () => {
+            const isChecked = maintenanceToggle.checked;
+            const success = await toggleMaintenanceMode(isChecked ? 1 : 0);
+            
+            const toggleLabel = document.querySelector('.toggle-label');
+            if (success && toggleLabel) {
+                toggleLabel.textContent = `Maintenance Mode is ${isChecked ? 'ON' : 'OFF'}`;
+            } else {
+                // Revert toggle if save failed
+                maintenanceToggle.checked = !isChecked;
+                alert('Failed to update maintenance mode');
+            }
+        });
+    }
     
-    changePasswordForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const newPassword = document.getElementById('new-password').value;
-        const confirmPassword = document.getElementById('confirm-password').value;
-        
-        if (newPassword !== confirmPassword) {
-            alert('New passwords do not match');
-            return;
-        }
-        
-        const success = await changeAdminPassword(newPassword);
-        
-        if (success) {
-            alert('Password changed successfully');
-            // Clear form
-            changePasswordForm.reset();
-        } else {
-            alert('Failed to change password');
-        }
-    });
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPasswordInput = getElement('new-password');
+            const confirmPasswordInput = getElement('confirm-password');
+            
+            if (!newPasswordInput || !confirmPasswordInput) return;
+            
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match');
+                return;
+            }
+            
+            const success = await changeAdminPassword(newPassword);
+            
+            if (success) {
+                alert('Password changed successfully');
+                // Clear form
+                changePasswordForm.reset();
+            } else {
+                alert('Failed to change password');
+            }
+        });
+    }
     
     // Close modal when clicking outside
     window.addEventListener('click', (event) => {
@@ -627,135 +644,231 @@ async function initializeAdmin() {
         updateMaintenanceUI();
         
         // Add double-click event to logo for admin access
-        let clickCount = 0;
-        let clickTimer;
-        
-        logoContainer.addEventListener('click', () => {
-            clickCount++;
+        const logoContainer = document.querySelector('.logo-container');
+        if (logoContainer) {
+            let clickCount = 0;
+            let clickTimer;
             
-            if (clickCount === 1) {
-                clickTimer = setTimeout(() => {
+            logoContainer.addEventListener('click', () => {
+                clickCount++;
+                
+                if (clickCount === 1) {
+                    clickTimer = setTimeout(() => {
+                        clickCount = 0;
+                    }, 500);
+                } else if (clickCount === 2) {
+                    clearTimeout(clickTimer);
                     clickCount = 0;
-                }, 500);
-            } else if (clickCount === 2) {
-                clearTimeout(clickTimer);
-                clickCount = 0;
-                createAdminLoginModal();
-            }
-        });
+                    createAdminLoginModal();
+                }
+            });
+        }
     } catch (error) {
         console.error("Error initializing admin settings:", error);
     }
 }
 
-// Event Listeners
-orderButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        // Don't add to cart if in maintenance mode
-        if (adminSettings.maintenanceMode === 1) return;
+// Setup event listeners after DOM is fully loaded
+function setupEventListeners() {
+    // Order buttons
+    const orderButtons = getElements('.order-button');
+    orderButtons.forEach(button => {
+        // Use both click and touchend events for better cross-platform compatibility
+        ['click', 'touchend'].forEach(eventType => {
+            button.addEventListener(eventType, (e) => {
+                // Prevent default only for touchend to avoid double triggering
+                if (eventType === 'touchend') {
+                    e.preventDefault();
+                }
+                
+                // Don't add to cart if in maintenance mode
+                if (adminSettings.maintenanceMode === 1) return;
+                
+                const id = button.getAttribute('data-id');
+                const name = button.getAttribute('data-name');
+                const price = parseFloat(button.getAttribute('data-price'));
+                
+                if (!id || !name || isNaN(price)) {
+                    console.error('Invalid product data:', { id, name, price });
+                    return;
+                }
+                
+                addToCart(id, name, price);
+                
+                // Show confirmation animation
+                const originalText = button.textContent;
+                button.textContent = 'ADDED!';
+                button.style.backgroundColor = 'rgba(40, 167, 69, 0.9)';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = 'rgba(180, 50, 20, 0.9)';
+                }, 1000);
+            }, { passive: false });
+        });
+    });
+
+    // Cart button
+    const cartButton = getElement('cart-button');
+    if (cartButton) {
+        cartButton.addEventListener('click', () => {
+            renderCart();
+            const cartModal = getElement('cart-modal');
+            if (cartModal) cartModal.style.display = 'block';
+        });
+    }
+
+    // Clear cart button
+    const clearCartButton = getElement('clear-cart');
+    if (clearCartButton) {
+        clearCartButton.addEventListener('click', clearCart);
+    }
+
+    // Checkout button
+    const checkoutButton = getElement('checkout');
+    if (checkoutButton) {
+        checkoutButton.addEventListener('click', () => {
+            if (cart.length === 0) return;
+            
+            const cartModal = getElement('cart-modal');
+            const checkoutModal = getElement('checkout-modal');
+            
+            if (cartModal) cartModal.style.display = 'none';
+            if (checkoutModal) checkoutModal.style.display = 'block';
+        });
+    }
+
+    // Close buttons
+    const closeButtons = getElements('.close');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const cartModal = getElement('cart-modal');
+            const checkoutModal = getElement('checkout-modal');
+            
+            if (cartModal) cartModal.style.display = 'none';
+            if (checkoutModal) checkoutModal.style.display = 'none';
+        });
+    });
+
+    // Checkout form
+    const checkoutForm = getElement('checkout-form');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Don't process order if in maintenance mode
+            if (adminSettings.maintenanceMode === 1) {
+                alert('Sorry, ordering is currently unavailable due to maintenance.');
+                return;
+            }
+            
+            // Get customer information
+            const nameInput = getElement('name');
+            const phoneInput = getElement('phone');
+            const addressInput = getElement('address');
+            
+            if (!nameInput || !phoneInput || !addressInput) {
+                console.error('Form inputs not found');
+                return;
+            }
+            
+            const customerInfo = {
+                name: nameInput.value,
+                phone: phoneInput.value,
+                address: addressInput.value
+            };
+            
+            // Create order
+            const order = await createOrder(customerInfo);
+            
+            if (order) {
+                // Set order number in confirmation modal
+                const orderNumber = getElement('order-number');
+                if (orderNumber) orderNumber.textContent = order.id;
+                
+                // Generate receipt image
+                generateReceiptImage(order);
+                
+                // Hide checkout modal and show confirmation
+                const checkoutModal = getElement('checkout-modal');
+                const confirmationModal = getElement('confirmation-modal');
+                
+                if (checkoutModal) checkoutModal.style.display = 'none';
+                if (confirmationModal) confirmationModal.style.display = 'block';
+                
+                // Clear cart after successful order
+                clearCart();
+            } else {
+                alert('There was an error processing your order. Please try again.');
+            }
+        });
+    }
+
+    // Close confirmation button
+    const closeConfirmation = getElement('close-confirmation');
+    if (closeConfirmation) {
+        closeConfirmation.addEventListener('click', () => {
+            const confirmationModal = getElement('confirmation-modal');
+            if (confirmationModal) confirmationModal.style.display = 'none';
+        });
+    }
+
+    // Track order button
+    const trackOrderBtn = getElement('track-order-btn');
+    if (trackOrderBtn) {
+        trackOrderBtn.addEventListener('click', () => {
+            const orderIdInput = getElement('order-id-input');
+            if (!orderIdInput) return;
+            
+            const orderId = orderIdInput.value.trim();
+            if (orderId) {
+                trackOrder(orderId);
+            } else {
+                const orderStatus = getElement('order-status');
+                if (orderStatus) {
+                    orderStatus.textContent = 'Please enter an Order ID.';
+                    orderStatus.className = 'order-status error';
+                }
+            }
+        });
+    }
+
+    // Close modals when clicking outside
+    window.addEventListener('click', (event) => {
+        const cartModal = getElement('cart-modal');
+        const checkoutModal = getElement('checkout-modal');
+        const confirmationModal = getElement('confirmation-modal');
         
-        const id = button.getAttribute('data-id');
-        const name = button.getAttribute('data-name');
-        const price = parseFloat(button.getAttribute('data-price'));
-        
-        addToCart(id, name, price);
-        
-        // Show confirmation animation
-        button.textContent = 'ADDED!';
-        button.style.backgroundColor = 'rgba(40, 167, 69, 0.9)';
-        
-        setTimeout(() => {
-            button.textContent = 'ORDER NOW';
-            button.style.backgroundColor = 'rgba(180, 50, 20, 0.9)';
-        }, 1000);
+        if (event.target === cartModal && cartModal) {
+            cartModal.style.display = 'none';
+        }
+        if (event.target === checkoutModal && checkoutModal) {
+            checkoutModal.style.display = 'none';
+        }
+        if (event.target === confirmationModal && confirmationModal) {
+            confirmationModal.style.display = 'none';
+        }
+    });
+}
+
+// Initialize when DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded');
+    updateCartCount();
+    initializeAdmin().then(() => {
+        setupEventListeners();
+        console.log('Event listeners set up');
     });
 });
 
-cartButton.addEventListener('click', () => {
-    renderCart();
-    cartModal.style.display = 'block';
-});
-
-clearCartButton.addEventListener('click', clearCart);
-
-checkoutButton.addEventListener('click', () => {
-    if (cart.length === 0) return;
-    
-    cartModal.style.display = 'none';
-    checkoutModal.style.display = 'block';
-});
-
-closeButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        cartModal.style.display = 'none';
-        checkoutModal.style.display = 'none';
-    });
-});
-
-checkoutForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    // Don't process order if in maintenance mode
-    if (adminSettings.maintenanceMode === 1) {
-        alert('Sorry, ordering is currently unavailable due to maintenance.');
-        return;
-    }
-    
-    // Get customer information
-    const customerInfo = {
-        name: document.getElementById('name').value,
-        phone: document.getElementById('phone').value,
-        address: document.getElementById('address').value
-    };
-    
-    // Create order
-    const order = await createOrder(customerInfo);
-    
-    if (order) {
-        // Set order number in confirmation modal
-        orderNumber.textContent = order.id;
-        
-        // Generate receipt image
-        generateReceiptImage(order);
-        
-        // Hide checkout modal and show confirmation
-        checkoutModal.style.display = 'none';
-        confirmationModal.style.display = 'block';
-        
-        // Clear cart after successful order
-        clearCart();
-    } else {
-        alert('There was an error processing your order. Please try again.');
-    }
-});
-
-closeConfirmation.addEventListener('click', () => {
-    confirmationModal.style.display = 'none';
-});
-
-trackOrderBtn.addEventListener('click', () => {
-    const orderId = orderIdInput.value.trim();
-    if (orderId) {
-        trackOrder(orderId);
-    } else {
-        orderStatus.textContent = 'Please enter an Order ID.';
-        orderStatus.className = 'order-status error';
-    }
-});
-
-// Close modals when clicking outside
-window.addEventListener('click', (event) => {
-    if (event.target === cartModal) {
-        cartModal.style.display = 'none';
-    }
-    if (event.target === checkoutModal) {
-        checkoutModal.style.display = 'none';
-    }
-    if (event.target === confirmationModal) {
-        confirmationModal.style.display = 'none';
-    }
-});
-
-// Initialize
-updateCartCount();
-initializeAdmin();
+// Fallback initialization for browsers that might have already loaded the DOM
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    console.log('DOM already loaded, initializing immediately');
+    setTimeout(() => {
+        updateCartCount();
+        initializeAdmin().then(() => {
+            setupEventListeners();
+            console.log('Event listeners set up (fallback)');
+        });
+    }, 1);
+}
