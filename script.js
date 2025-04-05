@@ -244,11 +244,32 @@ async function findOrderById(orderId) {
     }
 }
 
-// Generate receipt image
+// Create a non-dismissible overlay
+function createOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'page-overlay';
+    overlay.className = 'page-overlay';
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
+    return overlay;
+}
+
+// Remove the overlay
+function removeOverlay() {
+    const overlay = document.getElementById('page-overlay');
+    if (overlay) {
+        overlay.remove();
+        document.body.style.overflow = ''; // Restore scrolling
+    }
+}
+
+// Generate receipt image with improved Android compatibility
 function generateReceiptImage(order) {
     const canvas = getElement('receipt-canvas');
     const downloadReceiptBtn = getElement('download-receipt');
-    if (!canvas || !downloadReceiptBtn) return;
+    const receiptContainer = getElement('receipt-container');
+    
+    if (!canvas || !downloadReceiptBtn || !receiptContainer) return;
     
     const ctx = canvas.getContext('2d');
     
@@ -285,9 +306,135 @@ function generateReceiptImage(order) {
         ctx.font = 'bold 16px Arial';
         ctx.fillText(`Total: ₱${formatPrice(order.total)}`, canvas.width/2, 170);
         
-        // Set download link
+        // Set download link for desktop browsers
         downloadReceiptBtn.href = canvas.toDataURL('image/png');
         downloadReceiptBtn.download = `Seoul-Grill-Receipt-${order.id}.png`;
+        
+        // Add alternative methods for Android
+        
+        // 1. Add a "Copy Order ID" button
+        const copyOrderIdBtn = document.createElement('button');
+        copyOrderIdBtn.className = 'download-btn';
+        copyOrderIdBtn.style.marginLeft = '10px';
+        copyOrderIdBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Order ID';
+        copyOrderIdBtn.addEventListener('click', function() {
+            navigator.clipboard.writeText(order.id)
+                .then(() => {
+                    alert(`Order ID ${order.id} copied to clipboard!`);
+                })
+                .catch(err => {
+                    console.error('Could not copy text: ', err);
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = order.id;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert(`Order ID ${order.id} copied to clipboard!`);
+                });
+        });
+        
+        // 2. Add a "Share Receipt" button for mobile devices
+        if (navigator.share) {
+            const shareReceiptBtn = document.createElement('button');
+            shareReceiptBtn.className = 'download-btn';
+            shareReceiptBtn.style.marginTop = '10px';
+            shareReceiptBtn.innerHTML = '<i class="fas fa-share-alt"></i> Share Receipt';
+            shareReceiptBtn.addEventListener('click', function() {
+                canvas.toBlob(function(blob) {
+                    const file = new File([blob], `Seoul-Grill-Receipt-${order.id}.png`, { type: 'image/png' });
+                    
+                    navigator.share({
+                        title: 'Seoul Grill 199 Receipt',
+                        text: `My order #${order.id} from Seoul Grill 199`,
+                        files: [file]
+                    }).catch(err => {
+                        console.error('Share failed:', err);
+                        // Fallback if file sharing fails
+                        navigator.share({
+                            title: 'Seoul Grill 199 Receipt',
+                            text: `My order #${order.id} from Seoul Grill 199. Total: ₱${formatPrice(order.total)}`
+                        }).catch(err => {
+                            console.error('Share failed:', err);
+                        });
+                    });
+                });
+            });
+            
+            receiptContainer.appendChild(shareReceiptBtn);
+        }
+        
+        // 3. Add a "Save as Image" button with instructions for Android
+        const saveAsImageBtn = document.createElement('button');
+        saveAsImageBtn.className = 'download-btn';
+        saveAsImageBtn.style.marginTop = '10px';
+        saveAsImageBtn.innerHTML = '<i class="fas fa-image"></i> Save as Image';
+        saveAsImageBtn.addEventListener('click', function() {
+            // Open the image in a new tab for saving
+            const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+            const newTab = window.open('');
+            newTab.document.write(`
+                <html>
+                <head>
+                    <title>Seoul Grill Receipt - ${order.id}</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        body { 
+                            display: flex; 
+                            flex-direction: column; 
+                            align-items: center; 
+                            justify-content: center;
+                            font-family: Arial, sans-serif;
+                            padding: 20px;
+                            text-align: center;
+                        }
+                        img { 
+                            max-width: 100%; 
+                            border: 1px solid #ddd;
+                            margin-bottom: 20px;
+                        }
+                        p {
+                            color: #555;
+                            margin-bottom: 10px;
+                        }
+                        .order-id {
+                            font-weight: bold;
+                            font-size: 1.2em;
+                            color: #b43214;
+                            margin: 10px 0;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h2>Seoul Grill 199 Receipt</h2>
+                    <p>Long-press on the image below to save it</p>
+                    <img src="${image}" alt="Receipt">
+                    <p>Your Order ID:</p>
+                    <div class="order-id">${order.id}</div>
+                    <p>Please save this ID for tracking your order</p>
+                </body>
+                </html>
+            `);
+        });
+        
+        // Add the new buttons to the receipt container
+        receiptContainer.appendChild(copyOrderIdBtn);
+        receiptContainer.appendChild(saveAsImageBtn);
+        
+        // Add clear instructions
+        const instructionsDiv = document.createElement('div');
+        instructionsDiv.style.marginTop = '15px';
+        instructionsDiv.style.padding = '10px';
+        instructionsDiv.style.backgroundColor = '#f8f8f8';
+        instructionsDiv.style.borderRadius = '5px';
+        instructionsDiv.style.fontSize = '14px';
+        instructionsDiv.innerHTML = `
+            <p style="margin: 0 0 10px 0; font-weight: bold; color: #b43214;">Important:</p>
+            <p style="margin: 0 0 5px 0;">Please save your Order ID: <strong>${order.id}</strong></p>
+            <p style="margin: 0;">You'll need this ID to track your order status.</p>
+        `;
+        receiptContainer.appendChild(instructionsDiv);
     };
     logo.src = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background1-UAcGhZazx6BsYR7ZmAkJ8LCvNIoq2C.png';
 }
@@ -795,6 +942,9 @@ function setupEventListeners() {
                 address: addressInput.value
             };
             
+            // Create overlay to prevent interaction with the rest of the page
+            createOverlay();
+            
             // Create order
             const order = await createOrder(customerInfo);
             
@@ -811,12 +961,28 @@ function setupEventListeners() {
                 const confirmationModal = getElement('confirmation-modal');
                 
                 if (checkoutModal) checkoutModal.style.display = 'none';
-                if (confirmationModal) confirmationModal.style.display = 'block';
+                if (confirmationModal) {
+                    confirmationModal.style.display = 'block';
+                    
+                    // Modify the confirmation modal to be non-dismissible
+                    const closeBtn = confirmationModal.querySelector('.close');
+                    if (closeBtn) {
+                        closeBtn.style.display = 'none'; // Hide the close button
+                    }
+                    
+                    // Update the "Continue" button text
+                    const closeConfirmation = getElement('close-confirmation');
+                    if (closeConfirmation) {
+                        closeConfirmation.textContent = 'I have saved my receipt - Continue';
+                        closeConfirmation.style.backgroundColor = '#4CAF50'; // Green color
+                    }
+                }
                 
                 // Clear cart after successful order
                 clearCart();
             } else {
                 alert('There was an error processing your order. Please try again.');
+                removeOverlay(); // Remove overlay if there's an error
             }
         });
     }
@@ -827,6 +993,7 @@ function setupEventListeners() {
         closeConfirmation.addEventListener('click', () => {
             const confirmationModal = getElement('confirmation-modal');
             if (confirmationModal) confirmationModal.style.display = 'none';
+            removeOverlay(); // Remove overlay when user confirms
         });
     }
 
@@ -862,9 +1029,8 @@ function setupEventListeners() {
         if (event.target === checkoutModal && checkoutModal) {
             checkoutModal.style.display = 'none';
         }
-        if (event.target === confirmationModal && confirmationModal) {
-            confirmationModal.style.display = 'none';
-        }
+        // Don't close confirmation modal when clicking outside (only through the button)
+        // This ensures they don't accidentally dismiss it without saving their receipt
     });
 }
 
