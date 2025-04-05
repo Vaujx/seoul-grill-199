@@ -14,7 +14,18 @@ let adminSettings = {
 };
 
 // Initialize cart from localStorage or create empty cart
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
+let cart = [];
+try {
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+        const parsedCart = JSON.parse(savedCart);
+        // Ensure cart is always an array
+        cart = Array.isArray(parsedCart) ? parsedCart : [];
+    }
+} catch (error) {
+    console.error('Error parsing cart from localStorage:', error);
+    cart = [];
+}
 
 // DOM elements - using functions to get elements to avoid null references if DOM isn't fully loaded
 const getElement = (id) => document.getElementById(id);
@@ -67,6 +78,12 @@ function renderCart() {
 
 // Add item to cart
 function addToCart(id, name, price) {
+    // Ensure cart is an array before pushing
+    if (!Array.isArray(cart)) {
+        console.error('Cart is not an array, resetting cart');
+        cart = [];
+    }
+    
     cart.push({
         id,
         name,
