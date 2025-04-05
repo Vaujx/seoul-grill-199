@@ -265,266 +265,177 @@ function removeOverlay() {
 
 // Generate receipt image with improved Android compatibility
 function generateReceiptImage(order) {
-    const canvas = document.getElementById('receipt-canvas');
-    const downloadReceiptBtn = document.getElementById('download-receipt');
-    const receiptContainer = document.getElementById('receipt-container');
-
-    if (!canvas || !downloadReceiptBtn || !receiptContainer) {
-        console.error('Receipt elements not found:', { canvas, downloadReceiptBtn, receiptContainer });
-        return;
-    }
-
-    console.log('Generating receipt for order:', order);
+    const canvas = getElement('receipt-canvas');
+    const downloadReceiptBtn = getElement('download-receipt');
+    const receiptContainer = getElement('receipt-container');
     
-    // Set canvas dimensions explicitly
-    canvas.width = 300;
-    canvas.height = 400;
+    if (!canvas || !downloadReceiptBtn || !receiptContainer) return;
     
     const ctx = canvas.getContext('2d');
-    if (!ctx) {
-        console.error('Could not get canvas context');
-        return;
-    }
-
-    // Clear canvas with white background
+    
+    // Clear canvas
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+    
     // Draw receipt border
     ctx.strokeStyle = '#b43214';
     ctx.lineWidth = 3;
     ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
-
+    
     // Draw logo
     const logo = new Image();
     logo.crossOrigin = "anonymous"; // Add this to avoid CORS issues
-    
-    // Debug when logo loads
     logo.onload = function() {
-        console.log('Logo loaded successfully, dimensions:', logo.width, 'x', logo.height);
+        ctx.drawImage(logo, canvas.width/2 - 25, 15, 50, 50);
         
-        try {
-            // Draw logo
-            ctx.drawImage(logo, canvas.width/2 - 25, 15, 50, 50);
-            
-            // Draw receipt content
-            ctx.fillStyle = '#333';
-            ctx.font = 'bold 16px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('Seoul Grill 199', canvas.width/2, 80);
-            
-            ctx.font = '12px Arial';
-            ctx.fillText('Order Receipt', canvas.width/2, 95);
-            
-            ctx.font = 'bold 14px Arial';
-            ctx.fillText(`Order #: ${order.id}`, canvas.width/2, 120);
-            
-            ctx.font = '12px Arial';
-            ctx.fillText(`Date: ${order.date}`, canvas.width/2, 140);
-            
-            // Add items if available
-            let yPos = 160;
-            if (order.items && order.items.length > 0) {
-                ctx.font = '11px Arial';
-                ctx.fillText('Items:', canvas.width/2, yPos);
-                yPos += 15;
-                
-                order.items.forEach((item, index) => {
-                    if (index < 3) { // Limit to 3 items to avoid overflow
-                        ctx.fillText(`${item.name} - ₱${formatPrice(item.price)}`, canvas.width/2, yPos);
-                        yPos += 15;
-                    } else if (index === 3) {
-                        ctx.fillText(`... and ${order.items.length - 3} more items`, canvas.width/2, yPos);
-                        yPos += 15;
-                    }
+        // Draw receipt content
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Seoul Grill 199', canvas.width/2, 80);
+        
+        ctx.font = '12px Arial';
+        ctx.fillText('Order Receipt', canvas.width/2, 95);
+        
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText(`Order #: ${order.id}`, canvas.width/2, 120);
+        
+        ctx.font = '12px Arial';
+        ctx.fillText(`Date: ${order.date}`, canvas.width/2, 140);
+        
+        ctx.font = 'bold 16px Arial';
+        ctx.fillText(`Total: ₱${formatPrice(order.total)}`, canvas.width/2, 170);
+        
+        // Set download link for desktop browsers
+        downloadReceiptBtn.href = canvas.toDataURL('image/png');
+        downloadReceiptBtn.download = `Seoul-Grill-Receipt-${order.id}.png`;
+        
+        // Add alternative methods for Android
+        
+        // 1. Add a "Copy Order ID" button
+        const copyOrderIdBtn = document.createElement('button');
+        copyOrderIdBtn.className = 'download-btn';
+        copyOrderIdBtn.style.marginLeft = '10px';
+        copyOrderIdBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Order ID';
+        copyOrderIdBtn.addEventListener('click', function() {
+            navigator.clipboard.writeText(order.id)
+                .then(() => {
+                    alert(`Order ID ${order.id} copied to clipboard!`);
+                })
+                .catch(err => {
+                    console.error('Could not copy text: ', err);
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = order.id;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert(`Order ID ${order.id} copied to clipboard!`);
                 });
-            }
-            
-            // Draw total
-            ctx.font = 'bold 16px Arial';
-            ctx.fillText(`Total: ₱${formatPrice(order.total)}`, canvas.width/2, yPos + 10);
-            
-            // Set download link for desktop browsers
-            try {
-                const dataUrl = canvas.toDataURL('image/png');
-                downloadReceiptBtn.href = dataUrl;
-                downloadReceiptBtn.download = `Seoul-Grill-Receipt-${order.id}.png`;
-                console.log('Receipt image generated successfully');
-            } catch (e) {
-                console.error('Error generating dataURL:', e);
-            }
-            
-            // Add alternative methods for Android
-            
-            // 1. Add a "Copy Order ID" button
-            const copyOrderIdBtn = document.createElement('button');
-            copyOrderIdBtn.className = 'download-btn';
-            copyOrderIdBtn.style.marginLeft = '10px';
-            copyOrderIdBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Order ID';
-            copyOrderIdBtn.addEventListener('click', function() {
-                navigator.clipboard.writeText(order.id)
-                    .then(() => {
-                        alert(`Order ID ${order.id} copied to clipboard!`);
-                    })
-                    .catch(err => {
-                        console.error('Could not copy text: ', err);
-                        // Fallback for older browsers
-                        const textArea = document.createElement('textarea');
-                        textArea.value = order.id;
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
-                        alert(`Order ID ${order.id} copied to clipboard!`);
-                    });
-            });
-            
-            // 2. Add a "Share Receipt" button for mobile devices
-            if (navigator.share) {
-                const shareReceiptBtn = document.createElement('button');
-                shareReceiptBtn.className = 'download-btn';
-                shareReceiptBtn.style.marginTop = '10px';
-                shareReceiptBtn.innerHTML = '<i class="fas fa-share-alt"></i> Share Receipt';
-                shareReceiptBtn.addEventListener('click', function() {
-                    canvas.toBlob(function(blob) {
-                        const file = new File([blob], `Seoul-Grill-Receipt-${order.id}.png`, { type: 'image/png' });
-                        
+        });
+        
+        // 2. Add a "Share Receipt" button for mobile devices
+        if (navigator.share) {
+            const shareReceiptBtn = document.createElement('button');
+            shareReceiptBtn.className = 'download-btn';
+            shareReceiptBtn.style.marginTop = '10px';
+            shareReceiptBtn.innerHTML = '<i class="fas fa-share-alt"></i> Share Receipt';
+            shareReceiptBtn.addEventListener('click', function() {
+                canvas.toBlob(function(blob) {
+                    const file = new File([blob], `Seoul-Grill-Receipt-${order.id}.png`, { type: 'image/png' });
+                    
+                    navigator.share({
+                        title: 'Seoul Grill 199 Receipt',
+                        text: `My order #${order.id} from Seoul Grill 199`,
+                        files: [file]
+                    }).catch(err => {
+                        console.error('Share failed:', err);
+                        // Fallback if file sharing fails
                         navigator.share({
                             title: 'Seoul Grill 199 Receipt',
-                            text: `My order #${order.id} from Seoul Grill 199`,
-                            files: [file]
+                            text: `My order #${order.id} from Seoul Grill 199. Total: ₱${formatPrice(order.total)}`
                         }).catch(err => {
                             console.error('Share failed:', err);
-                            // Fallback if file sharing fails
-                            navigator.share({
-                                title: 'Seoul Grill 199 Receipt',
-                                text: `My order #${order.id} from Seoul Grill 199. Total: ₱${formatPrice(order.total)}`
-                            }).catch(err => {
-                                console.error('Share failed:', err);
-                            });
                         });
                     });
                 });
-                
-                receiptContainer.appendChild(shareReceiptBtn);
-            }
-            
-            // 3. Add a "Save as Image" button with instructions for Android
-            const saveAsImageBtn = document.createElement('button');
-            saveAsImageBtn.className = 'download-btn';
-            saveAsImageBtn.style.marginTop = '10px';
-            saveAsImageBtn.innerHTML = '<i class="fas fa-image"></i> Save as Image';
-            saveAsImageBtn.addEventListener('click', function() {
-                // Open the image in a new tab for saving
-                const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
-                const newTab = window.open('');
-                newTab.document.write(`
-                    <html>
-                    <head>
-                        <title>Seoul Grill Receipt - ${order.id}</title>
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <style>
-                            body { 
-                                display: flex; 
-                                flex-direction: column; 
-                                align-items: center; 
-                                justify-content: center;
-                                font-family: Arial, sans-serif;
-                                padding: 20px;
-                                text-align: center;
-                            }
-                            img { 
-                                max-width: 100%; 
-                                border: 1px solid #ddd;
-                                margin-bottom: 20px;
-                            }
-                            p {
-                                color: #555;
-                                margin-bottom: 10px;
-                            }
-                            .order-id {
-                                font-weight: bold;
-                                font-size: 1.2em;
-                                color: #b43214;
-                                margin: 10px 0;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <h2>Seoul Grill 199 Receipt</h2>
-                        <p>Long-press on the image below to save it</p>
-                        <img src="${image}" alt="Receipt">
-                        <p>Your Order ID:</p>
-                        <div class="order-id">${order.id}</div>
-                        <p>Please save this ID for tracking your order</p>
-                    </body>
-                    </html>
-                `);
             });
             
-            // Clear previous buttons before adding new ones
-            while (receiptContainer.children.length > 1) {
-                receiptContainer.removeChild(receiptContainer.lastChild);
-            }
-            
-            // Add the download button back (it might have been removed)
-            receiptContainer.appendChild(downloadReceiptBtn);
-            
-            // Add the new buttons to the receipt container
-            receiptContainer.appendChild(copyOrderIdBtn);
-            receiptContainer.appendChild(saveAsImageBtn);
-            
-            // Add clear instructions
-            const instructionsDiv = document.createElement('div');
-            instructionsDiv.style.marginTop = '15px';
-            instructionsDiv.style.padding = '10px';
-            instructionsDiv.style.backgroundColor = '#f8f8f8';
-            instructionsDiv.style.borderRadius = '5px';
-            instructionsDiv.style.fontSize = '14px';
-            instructionsDiv.innerHTML = `
-                <p style="margin: 0 0 10px 0; font-weight: bold; color: #b43214;">Important:</p>
-                <p style="margin: 0 0 5px 0;">Please save your Order ID: <strong>${order.id}</strong></p>
-                <p style="margin: 0;">You'll need this ID to track your order status.</p>
-            `;
-            receiptContainer.appendChild(instructionsDiv);
-        } catch (error) {
-            console.error('Error drawing receipt:', error);
+            receiptContainer.appendChild(shareReceiptBtn);
         }
+        
+        // 3. Add a "Save as Image" button with instructions for Android
+        const saveAsImageBtn = document.createElement('button');
+        saveAsImageBtn.className = 'download-btn';
+        saveAsImageBtn.style.marginTop = '10px';
+        saveAsImageBtn.innerHTML = '<i class="fas fa-image"></i> Save as Image';
+        saveAsImageBtn.addEventListener('click', function() {
+            // Open the image in a new tab for saving
+            const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+            const newTab = window.open('');
+            newTab.document.write(`
+                <html>
+                <head>
+                    <title>Seoul Grill Receipt - ${order.id}</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        body { 
+                            display: flex; 
+                            flex-direction: column; 
+                            align-items: center; 
+                            justify-content: center;
+                            font-family: Arial, sans-serif;
+                            padding: 20px;
+                            text-align: center;
+                        }
+                        img { 
+                            max-width: 100%; 
+                            border: 1px solid #ddd;
+                            margin-bottom: 20px;
+                        }
+                        p {
+                            color: #555;
+                            margin-bottom: 10px;
+                        }
+                        .order-id {
+                            font-weight: bold;
+                            font-size: 1.2em;
+                            color: #b43214;
+                            margin: 10px 0;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h2>Seoul Grill 199 Receipt</h2>
+                    <p>Long-press on the image below to save it</p>
+                    <img src="${image}" alt="Receipt">
+                    <p>Your Order ID:</p>
+                    <div class="order-id">${order.id}</div>
+                    <p>Please save this ID for tracking your order</p>
+                </body>
+                </html>
+            `);
+        });
+        
+        // Add the new buttons to the receipt container
+        receiptContainer.appendChild(copyOrderIdBtn);
+        receiptContainer.appendChild(saveAsImageBtn);
+        
+        // Add clear instructions
+        const instructionsDiv = document.createElement('div');
+        instructionsDiv.style.marginTop = '15px';
+        instructionsDiv.style.padding = '10px';
+        instructionsDiv.style.backgroundColor = '#f8f8f8';
+        instructionsDiv.style.borderRadius = '5px';
+        instructionsDiv.style.fontSize = '14px';
+        instructionsDiv.innerHTML = `
+            <p style="margin: 0 0 10px 0; font-weight: bold; color: #b43214;">Important:</p>
+            <p style="margin: 0 0 5px 0;">Please save your Order ID: <strong>${order.id}</strong></p>
+            <p style="margin: 0;">You'll need this ID to track your order status.</p>
+        `;
+        receiptContainer.appendChild(instructionsDiv);
     };
-    
-    // Debug if logo fails to load
-    logo.onerror = function(e) {
-        console.error('Error loading logo:', e);
-        // Continue with receipt generation without the logo
-        try {
-            // Draw receipt content without logo
-            ctx.fillStyle = '#333';
-            ctx.font = 'bold 16px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('Seoul Grill 199', canvas.width/2, 50);
-            
-            ctx.font = '12px Arial';
-            ctx.fillText('Order Receipt', canvas.width/2, 70);
-            
-            ctx.font = 'bold 14px Arial';
-            ctx.fillText(`Order #: ${order.id}`, canvas.width/2, 100);
-            
-            ctx.font = '12px Arial';
-            ctx.fillText(`Date: ${order.date}`, canvas.width/2, 120);
-            
-            ctx.font = 'bold 16px Arial';
-            ctx.fillText(`Total: ₱${formatPrice(order.total)}`, canvas.width/2, 150);
-            
-            // Set download link
-            downloadReceiptBtn.href = canvas.toDataURL('image/png');
-            downloadReceiptBtn.download = `Seoul-Grill-Receipt-${order.id}.png`;
-        } catch (error) {
-            console.error('Error drawing receipt without logo:', error);
-        }
-    };
-    
-    // Set logo source - make sure this URL is correct and accessible
-    console.log('Loading logo from URL');
     logo.src = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background1-UAcGhZazx6BsYR7ZmAkJ8LCvNIoq2C.png';
 }
 
@@ -921,121 +832,6 @@ async function initializeAdmin() {
     }
 }
 
-// Chatbot functionality
-function initializeChatbot() {
-    const toggleChatBtn = getElement('toggle-chat');
-    const chatBody = getElement('chat-body');
-    const chatInput = getElement('chat-input');
-    const sendMessageBtn = getElement('send-message');
-    const chatMessages = getElement('chat-messages');
-    
-    if (!toggleChatBtn || !chatBody || !chatInput || !sendMessageBtn || !chatMessages) return;
-    
-    // Toggle chat body
-    toggleChatBtn.addEventListener('click', () => {
-        if (chatBody.style.display === 'flex') {
-            chatBody.style.display = 'none';
-        } else {
-            chatBody.style.display = 'flex';
-            chatInput.focus();
-        }
-    });
-    
-    // Send message function
-    function sendMessage() {
-        const message = chatInput.value.trim();
-        if (!message) return;
-        
-        // Add user message to chat
-        addMessage(message, 'user');
-        
-        // Clear input
-        chatInput.value = '';
-        
-        // Get bot response
-        const response = getBotResponse(message);
-        
-        // Add bot response with a slight delay
-        setTimeout(() => {
-            addMessage(response, 'bot');
-        }, 500);
-    }
-    
-    // Add message to chat
-    function addMessage(text, sender) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}`;
-        
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message-content';
-        messageContent.textContent = text;
-        
-        messageDiv.appendChild(messageContent);
-        chatMessages.appendChild(messageDiv);
-        
-        // Scroll to bottom
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-    
-    // Get bot response based on user input
-    function getBotResponse(message) {
-        message = message.toLowerCase();
-        
-        // Check for greetings
-        if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
-            return "Hello! How can I help you today?";
-        }
-        
-        // Check for menu inquiries
-        if (message.includes('menu') || message.includes('what do you offer') || message.includes('what can i order')) {
-            return "We offer various Korean BBQ options including Pork Belly (₱199), Beef Brisket (₱249), Marinated Chicken (₱179), Spicy Pork (₱219), Beef Bulgogi (₱259), and Seafood Mix (₱279). You can order directly from our menu!";
-        }
-        
-        // Check for delivery inquiries
-        if (message.includes('delivery') || message.includes('deliver') || message.includes('shipping')) {
-            return "We deliver to all areas in Zambales and nearby provinces. Delivery time is usually 30-45 minutes depending on your location.";
-        }
-        
-        // Check for order status inquiries
-        if (message.includes('order status') || message.includes('track') || message.includes('my order')) {
-            return "You can track your order using the Order ID provided in your receipt. Just enter it in the 'Track Your Order' section above.";
-        }
-        
-        // Check for payment inquiries
-        if (message.includes('payment') || message.includes('pay') || message.includes('cash on delivery')) {
-            return "We accept Cash on Delivery (COD), GCash, and bank transfers. Payment details will be provided after you place your order.";
-        }
-        
-        // Check for business hours
-        if (message.includes('hours') || message.includes('open') || message.includes('close') || message.includes('time')) {
-            return "We're open daily from 10:00 AM to 9:00 PM.";
-        }
-        
-        // Check for contact inquiries
-        if (message.includes('contact') || message.includes('phone') || message.includes('call') || message.includes('email')) {
-            return "You can contact us at +63 912 345 6789 or email us at info@seoulgrill199.com.";
-        }
-        
-        // Check for location inquiries
-        if (message.includes('location') || message.includes('address') || message.includes('where')) {
-            return "We're located at 123 Korean BBQ Street, Zambales. You can find us on Google Maps!";
-        }
-        
-        // Default response
-        return "I'm not sure I understand. Can you please rephrase your question? You can ask about our menu, delivery, order tracking, payment methods, business hours, or contact information.";
-    }
-    
-    // Send message on button click
-    sendMessageBtn.addEventListener('click', sendMessage);
-    
-    // Send message on Enter key
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-}
-
 // Setup event listeners after DOM is fully loaded
 function setupEventListeners() {
     // Order buttons
@@ -1244,7 +1040,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCartCount();
     initializeAdmin().then(() => {
         setupEventListeners();
-        initializeChatbot();
         console.log('Event listeners set up');
     });
 });
@@ -1256,7 +1051,6 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
         updateCartCount();
         initializeAdmin().then(() => {
             setupEventListeners();
-            initializeChatbot();
             console.log('Event listeners set up (fallback)');
         });
     }, 1);
