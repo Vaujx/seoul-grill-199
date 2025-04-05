@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seoul Grill 199 - Samgyupsal Ordering</title>
-    <link rel="icon" href="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background1-UAcGhZazx6BsYR7ZmAkJ8LCvNIoq2C.png" type="image/png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>Seoul Grill 199 - Order Online</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background1-UAcGhZazx6BsYR7ZmAkJ8LCvNIoq2C.png" type="image/png">
+    <link rel="stylesheet" href="chatbot.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <header>
-        <div class="header-bg">
+        <div class="header-content">
             <div class="logo-container">
                 <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background1-UAcGhZazx6BsYR7ZmAkJ8LCvNIoq2C.png" alt="Seoul Grill 199 Logo" class="logo">
             </div>
-            <div class="cart-icon">
-                <button id="cart-button" class="cart-btn">
+            <h1>Seoul Grill 199</h1>
+            <div class="cart-container">
+                <button id="cart-button">
                     <i class="fas fa-shopping-cart"></i>
                     <span id="cart-count">0</span>
                 </button>
@@ -24,219 +27,114 @@
     </header>
 
     <main>
-        <section class="menu-section">
-            <h2>Our Menu</h2>
-            <div class="menu-grid">
-                <div class="menu-item">
-                    <div class="menu-image">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/samgyupsal1-Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9.jpg" alt="Pork Belly">
-                        <button class="order-button" data-id="1" data-name="Pork Belly" data-price="199">ORDER</button>
-                    </div>
-                    <div class="menu-details">
-                        <h3>Pork Belly</h3>
-                        <p>Thinly sliced pork belly, perfect for grilling</p>
-                        <p class="price">₱199</p>
-                    </div>
-                </div>
-                <div class="menu-item">
-                    <div class="menu-image">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/samgyupsal2-Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9.jpg" alt="Beef Brisket">
-                        <button class="order-button" data-id="2" data-name="Beef Brisket" data-price="249">ORDER</button>
-                    </div>
-                    <div class="menu-details">
-                        <h3>Beef Brisket</h3>
-                        <p>Premium beef brisket slices with perfect marbling</p>
-                        <p class="price">₱249</p>
-                    </div>
-                </div>
-                <div class="menu-item">
-                    <div class="menu-image">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/samgyupsal3-Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9.jpg" alt="Marinated Chicken">
-                        <button class="order-button" data-id="3" data-name="Marinated Chicken" data-price="179">ORDER</button>
-                    </div>
-                    <div class="menu-details">
-                        <h3>Marinated Chicken</h3>
-                        <p>Tender chicken marinated in special Korean sauce</p>
-                        <p class="price">₱179</p>
-                    </div>
-                </div>
-                <div class="menu-item">
-                    <div class="menu-image">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/samgyupsal4-Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9.jpg" alt="Spicy Pork">
-                        <button class="order-button" data-id="4" data-name="Spicy Pork" data-price="219">ORDER</button>
-                    </div>
-                    <div class="menu-details">
-                        <h3>Spicy Pork</h3>
-                        <p>Spicy marinated pork slices with Korean chili paste</p>
-                        <p class="price">₱219</p>
-                    </div>
-                </div>
-                <div class="menu-item">
-                    <div class="menu-image">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/samgyupsal5-Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9.jpg" alt="Beef Bulgogi">
-                        <button class="order-button" data-id="5" data-name="Beef Bulgogi" data-price="259">ORDER</button>
-                    </div>
-                    <div class="menu-details">
-                        <h3>Beef Bulgogi</h3>
-                        <p>Sweet and savory marinated beef slices</p>
-                        <p class="price">₱259</p>
-                    </div>
-                </div>
-                <div class="menu-item">
-                    <div class="menu-image">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/samgyupsal6-Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9Yx9Iy9.jpg" alt="Seafood Mix">
-                        <button class="order-button" data-id="6" data-name="Seafood Mix" data-price="279">ORDER</button>
-                    </div>
-                    <div class="menu-details">
-                        <h3>Seafood Mix</h3>
-                        <p>Fresh assortment of shrimp, squid, and mussels</p>
-                        <p class="price">₱279</p>
-                    </div>
+        <div class="menu-container">
+            <div class="menu-item">
+                <div class="image-container">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/FamilysetA.jpg-1clVI1axDXP8XKXp7e41zzD5Q9hUgu.jpeg" alt="Family Set A">
+                    <button class="order-button" data-id="setA" data-name="Family Set A" data-price="900">ORDER NOW</button>
                 </div>
             </div>
-        </section>
 
-        <section class="track-order-section">
+            <div class="menu-item">
+                <div class="image-container">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/FamilysetB.jpg-abX3ztc3BUWXHe65k7A0D9qbkPaaOn.jpeg" alt="Family Set B">
+                    <button class="order-button" data-id="setB" data-name="Family Set B" data-price="1260">ORDER NOW</button>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <div class="image-container">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/FamilysetC.jpg-F7HJt9mf7j8px4ePo3DexwlBuQQ5Vs.jpeg" alt="Family Set C">
+                    <button class="order-button" data-id="setC" data-name="Family Set C" data-price="1410">ORDER NOW</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="track-order-section">
             <h2>Track Your Order</h2>
-            <div class="track-order-container">
-                <div class="track-order-form">
-                    <input type="text" id="order-id-input" placeholder="Enter your Order ID">
-                    <button id="track-order-btn">Track Order</button>
-                </div>
-                <div id="order-status" class="order-status">
-                    <!-- Order status will be displayed here -->
-                </div>
+            <div class="track-order-form">
+                <input type="text" id="order-id-input" placeholder="Enter your Order ID">
+                <button id="track-order-btn">Track Order</button>
             </div>
-        </section>
-
-        <section class="chat-section">
-            <div class="chat-container">
-                <div class="chat-header">
-                    <h3>Chat with Us</h3>
-                    <button id="toggle-chat" class="toggle-chat-btn">
-                        <i class="fas fa-comment"></i>
-                    </button>
-                </div>
-                <div id="chat-body" class="chat-body">
-                    <div id="chat-messages" class="chat-messages">
-                        <div class="message bot">
-                            <div class="message-content">
-                                Hello! Welcome to Seoul Grill 199. How can I help you today?
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chat-input-container">
-                        <input type="text" id="chat-input" placeholder="Type your message...">
-                        <button id="send-message">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
+            <div id="order-status" class="order-status"></div>
+        </div>
     </main>
 
-    <footer>
-        <div class="footer-content">
-            <div class="footer-logo">
-                <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background1-UAcGhZazx6BsYR7ZmAkJ8LCvNIoq2C.png" alt="Seoul Grill 199 Logo" class="logo">
-                <h3>Seoul Grill 199</h3>
-            </div>
-            <div class="footer-info">
-                <p><i class="fas fa-map-marker-alt"></i> 123 Korean BBQ Street, Zambales</p>
-                <p><i class="fas fa-phone"></i> +63 912 345 6789</p>
-                <p><i class="fas fa-envelope"></i> info@seoulgrill199.com</p>
-            </div>
-            <div class="footer-social">
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2023 Seoul Grill 199. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <!-- Cart Modal -->
     <div id="cart-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>Your Cart</h2>
-            <div id="cart-items" class="cart-items">
-                <!-- Cart items will be displayed here -->
+            <h2>Your Order</h2>
+            <div id="cart-items"></div>
+            <div class="cart-total">
+                <strong>Total: ₱<span id="cart-total">0.00</span></strong>
             </div>
-            <div class="cart-total-container">
-                <p>Total: ₱<span id="cart-total">0.00</span></p>
-            </div>
-            <div class="cart-buttons">
-                <button id="clear-cart" class="btn secondary">Clear Cart</button>
-                <button id="checkout" class="btn primary">Checkout</button>
+            <div class="cart-actions">
+                <button id="clear-cart">Clear Cart</button>
+                <button id="checkout">Checkout</button>
             </div>
         </div>
     </div>
 
-    <!-- Checkout Modal -->
     <div id="checkout-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>Checkout</h2>
+            <h2>Complete Your Order</h2>
             <form id="checkout-form">
                 <div class="form-group">
                     <label for="name">Name:</label>
                     <input type="text" id="name" required>
                 </div>
                 <div class="form-group">
-                    <label for="phone">Phone:</label>
+                    <label for="phone">Phone Number:</label>
                     <input type="tel" id="phone" required>
                 </div>
                 <div class="form-group">
-                    <label for="address">Province:</label>
-                    <select id="address" required>
-                        <option value="" disabled selected>Select your province</option>
-                        <option value="Zambales - Subic">Zambales - Subic</option>
-                        <option value="Zambales - Olongapo City">Zambales - Olongapo City</option>
-                        <option value="Zambales - Castillejos">Zambales - Castillejos</option>
-                        <option value="Zambales - San Marcelino">Zambales - San Marcelino</option>
-                        <option value="Zambales - San Antonio">Zambales - San Antonio</option>
-                        <option value="Zambales - San Narciso">Zambales - San Narciso</option>
-                        <option value="Zambales - San Felipe">Zambales - San Felipe</option>
-                        <option value="Zambales - Cabangan">Zambales - Cabangan</option>
-                        <option value="Zambales - Botolan">Zambales - Botolan</option>
-                        <option value="Zambales - Iba">Zambales - Iba</option>
-                        <option value="Zambales - Palauig">Zambales - Palauig</option>
-                        <option value="Zambales - Masinloc">Zambales - Masinloc</option>
-                        <option value="Zambales - Candelaria">Zambales - Candelaria</option>
-                        <option value="Zambales - Santa Cruz">Zambales - Santa Cruz</option>
-                        <option value="Bataan">Bataan</option>
-                        <option value="Pampanga">Pampanga</option>
-                        <option value="Tarlac">Tarlac</option>
-                        <option value="Pangasinan">Pangasinan</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn primary">Place Order</button>
+  <label for="address">Province:</label>
+  <select id="address" required>
+    <option value="" disabled selected>Select your province</option>
+    <option value="Zambales - Subic">Zambales - Subic</option>
+    <option value="Zambales - Olongapo City">Zambales - Olongapo City</option>
+    <option value="Zambales - Castillejos">Zambales - Castillejos</option>
+    <option value="Zambales - San Marcelino">Zambales - San Marcelino</option>
+    <option value="Zambales - San Antonio">Zambales - San Antonio</option>
+    <option value="Zambales - San Narciso">Zambales - San Narciso</option>
+    <option value="Zambales - San Felipe">Zambales - San Felipe</option>
+    <option value="Zambales - Cabangan">Zambales - Cabangan</option>
+    <option value="Zambales - Botolan">Zambales - Botolan</option>
+    <option value="Zambales - Iba">Zambales - Iba</option>
+    <option value="Zambales - Palauig">Zambales - Palauig</option>
+    <option value="Zambales - Masinloc">Zambales - Masinloc</option>
+    <option value="Zambales - Candelaria">Zambales - Candelaria</option>
+    <option value="Zambales - Santa Cruz">Zambales - Santa Cruz</option>
+    <option value="Bataan">Bataan</option>
+    <option value="Pampanga">Pampanga</option>
+    <option value="Tarlac">Tarlac</option>
+    <option value="Pangasinan">Pangasinan</option>
+  </select>
+</div>
+                <button type="submit">Place Order</button>
             </form>
         </div>
     </div>
 
-    <!-- Confirmation Modal -->
     <div id="confirmation-modal" class="modal">
         <div class="modal-content">
             <h2>Order Confirmed!</h2>
             <p>Thank you for your order. Your delicious Korean BBQ will be delivered soon!</p>
             <p>Order #: <span id="order-number"></span></p>
-            
-            <div id="receipt-container" class="receipt-container">
-                <canvas id="receipt-canvas" width="300" height="400"></canvas>
-                <a id="download-receipt" class="download-btn" href="#" download>
-                    <i class="fas fa-download"></i> Download Receipt
-                </a>
+            <div class="receipt-container">
+                <canvas id="receipt-canvas" width="300" height="200"></canvas>
+                <a id="download-receipt" class="download-btn">Download Receipt</a>
             </div>
-            
-            <button id="close-confirmation" class="btn">I have saved my receipt - Continue</button>
+            <button id="close-confirmation">OK</button>
         </div>
     </div>
 
+    <footer>
+        <p>Seoul Grill 199. All rights reserved.</p>
+    </footer>
+
     <script src="script.js"></script>
+     <script src="chatbot.js"></script>
 </body>
 </html>
