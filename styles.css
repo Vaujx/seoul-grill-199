@@ -477,33 +477,125 @@ h2 {
 
 /* Receipt styles */
 .receipt-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin: 20px 0;
-    text-align: center;
-}
-
-#receipt-canvas {
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    margin-bottom: 15px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+  }
+  
+  #receipt-canvas {
     max-width: 100%;
-}
-
-.download-btn {
-    display: inline-block;
+    height: auto;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+  }
+  
+  .download-btn {
+    margin: 5px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
     background-color: #b43214;
     color: white;
-    padding: 10px 20px;
-    border-radius: 6px;
-    text-decoration: none;
     font-weight: 500;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
     transition: background-color 0.3s ease;
-}
-
-.download-btn:hover {
+  }
+  
+  .download-btn:hover {
     background-color: #a02d10;
-}
-
+  }
+  
+  .download-btn i {
+    font-size: 14px;
+  }
+  
+  /* Modify the confirmation modal styles */
+  #confirmation-modal .modal-content {
+    max-width: 500px;
+    padding: 25px;
+    text-align: center;
+    background-color: white;
+    border-radius: 8px;
+  }
+  
+  #confirmation-modal h2 {
+    color: #b43214;
+    margin-bottom: 15px;
+  }
+  
+  #close-confirmation {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    font-size: 16px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  #close-confirmation:hover {
+    background-color: #45a049;
+  }
+  
+  #receipt-image-container {
+    width: 350px;
+    height: 200px;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  #download-receipt {
+    background-color: #b43214;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+  #download-receipt:hover {
+    background-color: #a02d10;
+  }
+  
+  
+  /* Modify the confirmation modal styles */
+  #confirmation-modal .modal-content {
+    max-width: 90%;
+    width: 500px;
+    padding: 25px;
+    text-align: center;
+  }
+  
+  #close-confirmation {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    font-size: 16px;
+    background-color: #4caf50; /* Green color for better visibility */
+  }
+  
+  #close-confirmation:hover {
+    background-color: #45a049;
+  }
+  
 /* Form styles */
 .form-group {
     margin-bottom: 20px;
