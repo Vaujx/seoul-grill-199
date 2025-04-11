@@ -1,468 +1,402 @@
 // JSONBin configuration
-const JSONBIN_BIN_ID = '67efd7ca8a456b7966826626';
-const JSONBIN_API_KEY = '$2a$10$mr7Pv.byRuls.bfrMNbLvOqwv5rXBQukox2e/i6tZdOVV91px6/wS';
-const JSONBIN_API_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+const JSONBIN_BIN_ID = "67efd7ca8a456b7966826626"
+const JSONBIN_API_KEY = "$2a$10$mr7Pv.byRuls.bfrMNbLvOqwv5rXBQukox2e/i6tZdOVV91px6/wS"
+const JSONBIN_API_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`
 
 // Admin settings JSONBin
-const ADMIN_BIN_ID = '67efd6988960c979a57e2abc';
-const ADMIN_API_URL = `https://api.jsonbin.io/v3/b/${ADMIN_BIN_ID}`;
+const ADMIN_BIN_ID = "67efd6988960c979a57e2abc"
+const ADMIN_API_URL = `https://api.jsonbin.io/v3/b/${ADMIN_BIN_ID}`
 
 // Admin settings
 let adminSettings = {
-    maintenanceMode: 0,
-    password: "123"
-};
+  maintenanceMode: 0,
+  password: "123",
+}
 
 // Initialize cart from localStorage or create empty cart
-let cart = [];
+let cart = []
 try {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-        const parsedCart = JSON.parse(savedCart);
-        // Ensure cart is always an array
-        cart = Array.isArray(parsedCart) ? parsedCart : [];
-    }
+  const savedCart = localStorage.getItem("cart")
+  if (savedCart) {
+    const parsedCart = JSON.parse(savedCart)
+    // Ensure cart is always an array
+    cart = Array.isArray(parsedCart) ? parsedCart : []
+  }
 } catch (error) {
-    console.error('Error parsing cart from localStorage:', error);
-    cart = [];
+  console.error("Error parsing cart from localStorage:", error)
+  cart = []
 }
 
 // DOM elements - using functions to get elements to avoid null references if DOM isn't fully loaded
-const getElement = (id) => document.getElementById(id);
-const getElements = (selector) => document.querySelectorAll(selector);
+const getElement = (id) => document.getElementById(id)
+const getElements = (selector) => document.querySelectorAll(selector)
 
 // Update cart count in header
 function updateCartCount() {
-    const cartCount = getElement('cart-count');
-    if (!cartCount) return;
-    
-    const totalItems = cart.length;
-    cartCount.textContent = totalItems;
+  const cartCount = getElement("cart-count")
+  if (!cartCount) return
+
+  const totalItems = cart.length
+  cartCount.textContent = totalItems
 }
 
 // Format price to Philippine Peso
 function formatPrice(price) {
-    return price.toFixed(2);
+  return price.toFixed(2)
 }
 
-// Calculate cart total
+// Update the calculateTotal function to include shipping fee
 function calculateTotal() {
-    return cart.reduce((total, item) => total + item.price, 0);
+  const subtotal = cart.reduce((total, item) => total + item.price, 0)
+  const shippingFee = 50 // Fixed shipping fee of ₱50
+  return subtotal + shippingFee
 }
 
-// Render cart items
-function renderCart() {
-    const cartItems = getElement('cart-items');
-    const cartTotal = getElement('cart-total');
-    if (!cartItems || !cartTotal) return;
-    
-    if (cart.length === 0) {
-        cartItems.innerHTML = '<p>Your cart is empty</p>';
-        cartTotal.textContent = '0.00';
-        return;
-    }
+// Add a function to calculate subtotal (without shipping)
+function calculateSubtotal() {
+  return cart.reduce((total, item) => total + item.price, 0)
+}
 
-    cartItems.innerHTML = '';
-    cart.forEach((item, index) => {
-        const cartItem = document.createElement('div');
-        cartItem.classList.add('cart-item');
-        cartItem.innerHTML = `
+// Update the renderCart function to show shipping fee
+function renderCart() {
+  const cartItems = getElement("cart-items")
+  const cartTotal = getElement("cart-total")
+  if (!cartItems || !cartTotal) return
+
+  if (cart.length === 0) {
+    cartItems.innerHTML = "<p>Your cart is empty</p>"
+    cartTotal.textContent = "0.00"
+    return
+  }
+
+  cartItems.innerHTML = ""
+  cart.forEach((item, index) => {
+    const cartItem = document.createElement("div")
+    cartItem.classList.add("cart-item")
+    cartItem.innerHTML = `
             <div class="cart-item-name">${item.name}</div>
             <div class="cart-item-price">₱${formatPrice(item.price)}</div>
-        `;
-        cartItems.appendChild(cartItem);
-    });
+        `
+    cartItems.appendChild(cartItem)
+  })
 
-    cartTotal.textContent = formatPrice(calculateTotal());
+  // Add shipping fee display
+  const subtotal = calculateSubtotal()
+  const shippingFee = 50
+  const total = subtotal + shippingFee
+
+  // Create shipping fee and subtotal elements
+  const subtotalDiv = document.createElement("div")
+  subtotalDiv.classList.add("cart-item")
+  subtotalDiv.style.borderTop = "1px dashed #ddd"
+  subtotalDiv.style.marginTop = "10px"
+  subtotalDiv.style.paddingTop = "10px"
+  subtotalDiv.innerHTML = `
+        <div class="cart-item-name">Subtotal</div>
+        <div class="cart-item-price">₱${formatPrice(subtotal)}</div>
+    `
+
+  const shippingDiv = document.createElement("div")
+  shippingDiv.classList.add("cart-item")
+  shippingDiv.innerHTML = `
+        <div class="cart-item-name">Shipping Fee</div>
+        <div class="cart-item-price">₱${formatPrice(shippingFee)}</div>
+    `
+
+  cartItems.appendChild(subtotalDiv)
+  cartItems.appendChild(shippingDiv)
+
+  cartTotal.textContent = formatPrice(total)
 }
 
 // Add item to cart
 function addToCart(id, name, price) {
-    // Ensure cart is an array before pushing
-    if (!Array.isArray(cart)) {
-        console.error('Cart is not an array, resetting cart');
-        cart = [];
-    }
-    
-    cart.push({
-        id,
-        name,
-        price
-    });
-    
-    // Save cart to localStorage
-    localStorage.setItem('cart', JSON.stringify(cart));
-    updateCartCount();
+  // Ensure cart is an array before pushing
+  if (!Array.isArray(cart)) {
+    console.error("Cart is not an array, resetting cart")
+    cart = []
+  }
+
+  cart.push({
+    id,
+    name,
+    price,
+  })
+
+  // Save cart to localStorage
+  localStorage.setItem("cart", JSON.stringify(cart))
+  updateCartCount()
 }
 
 // Clear cart
 function clearCart() {
-    cart = [];
-    localStorage.setItem('cart', JSON.stringify(cart));
-    updateCartCount();
-    renderCart();
+  cart = []
+  localStorage.setItem("cart", JSON.stringify(cart))
+  updateCartCount()
+  renderCart()
 }
 
 // Generate a unique order ID
 function generateOrderId() {
-    return 'SG' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 1000);
+  return "SG" + Date.now().toString().slice(-8) + Math.floor(Math.random() * 1000)
 }
 
 // Get current date and time formatted
 function getCurrentDateTime() {
-    const now = new Date();
-    return now.toLocaleString('en-PH', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+  const now = new Date()
+  return now.toLocaleString("en-PH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
 }
 
 // Fetch orders from JSONBin
 async function fetchOrders() {
-    try {
-        const response = await fetch(JSONBIN_API_URL, {
-            method: 'GET',
-            headers: {
-                'X-Master-Key': JSONBIN_API_KEY,
-                'X-Bin-Meta': false
-            }
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Failed to fetch orders: ${response.status} ${response.statusText}. ${errorText}`);
-        }
-        
-        const data = await response.json();
-        return data.orders || [];
-    } catch (error) {
-        console.error('Error fetching orders:', error);
-        return [];
+  try {
+    const response = await fetch(JSONBIN_API_URL, {
+      method: "GET",
+      headers: {
+        "X-Master-Key": JSONBIN_API_KEY,
+        "X-Bin-Meta": false,
+      },
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Failed to fetch orders: ${response.status} ${response.statusText}. ${errorText}`)
     }
+
+    const data = await response.json()
+    return data.orders || []
+  } catch (error) {
+    console.error("Error fetching orders:", error)
+    return []
+  }
 }
 
 // Save orders to JSONBin
 async function saveOrders(orders) {
+  try {
+    // First check if the bin exists and create initial structure if needed
+    let currentData
     try {
-        // First check if the bin exists and create initial structure if needed
-        let currentData;
-        try {
-            const checkResponse = await fetch(JSONBIN_API_URL, {
-                method: 'GET',
-                headers: {
-                    'X-Master-Key': JSONBIN_API_KEY,
-                    'X-Bin-Meta': false
-                }
-            });
-            
-            if (checkResponse.ok) {
-                currentData = await checkResponse.json();
-            } else if (checkResponse.status === 404) {
-                // Bin doesn't exist or is empty, create initial structure
-                currentData = { orders: [] };
-            } else {
-                const errorText = await checkResponse.text();
-                throw new Error(`Failed to check bin: ${checkResponse.status} ${checkResponse.statusText}. ${errorText}`);
-            }
-        } catch (error) {
-            console.error('Error checking bin:', error);
-            currentData = { orders: [] };
-        }
-        
-        // Prepare data to save
-        const dataToSave = { ...currentData, orders };
-        
-        // Save to JSONBin
-        const response = await fetch(JSONBIN_API_URL, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': JSONBIN_API_KEY
-            },
-            body: JSON.stringify(dataToSave)
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Failed to save orders: ${response.status} ${response.statusText}. ${errorText}`);
-        }
-        
-        return true;
+      const checkResponse = await fetch(JSONBIN_API_URL, {
+        method: "GET",
+        headers: {
+          "X-Master-Key": JSONBIN_API_KEY,
+          "X-Bin-Meta": false,
+        },
+      })
+
+      if (checkResponse.ok) {
+        currentData = await checkResponse.json()
+      } else if (checkResponse.status === 404) {
+        // Bin doesn't exist or is empty, create initial structure
+        currentData = { orders: [] }
+      } else {
+        const errorText = await checkResponse.text()
+        throw new Error(`Failed to check bin: ${checkResponse.status} ${checkResponse.statusText}. ${errorText}`)
+      }
     } catch (error) {
-        console.error('Error saving orders:', error);
-        return false;
+      console.error("Error checking bin:", error)
+      currentData = { orders: [] }
     }
+
+    // Prepare data to save
+    const dataToSave = { ...currentData, orders }
+
+    // Save to JSONBin
+    const response = await fetch(JSONBIN_API_URL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": JSONBIN_API_KEY,
+      },
+      body: JSON.stringify(dataToSave),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Failed to save orders: ${response.status} ${response.statusText}. ${errorText}`)
+    }
+
+    return true
+  } catch (error) {
+    console.error("Error saving orders:", error)
+    return false
+  }
 }
 
-// Create a new order
+// Update the createOrder function to include shipping fee in the order
 async function createOrder(customerInfo) {
-    const orderId = generateOrderId();
-    const orderDate = getCurrentDateTime();
-    const total = calculateTotal();
-    
-    const order = {
-        id: orderId,
-        date: orderDate,
-        customer: customerInfo,
-        items: [...cart],
-        total: total,
-        status: 'Processing'
-    };
-    
-    try {
-        // Fetch existing orders
-        const orders = await fetchOrders();
-        
-        // Add new order
-        orders.push(order);
-        
-        // Save updated orders
-        const success = await saveOrders(orders);
-        
-        if (success) {
-            return order;
-        } else {
-            throw new Error('Failed to save order to JSONBin');
-        }
-    } catch (error) {
-        console.error('Error creating order:', error);
-        return null;
+  const orderId = generateOrderId()
+  const orderDate = getCurrentDateTime()
+  const subtotal = calculateSubtotal()
+  const shippingFee = 50
+  const total = subtotal + shippingFee
+
+  const order = {
+    id: orderId,
+    date: orderDate,
+    customer: customerInfo,
+    items: [...cart],
+    subtotal: subtotal,
+    shippingFee: shippingFee,
+    total: total,
+    status: "Processing",
+  }
+
+  try {
+    // Fetch existing orders
+    const orders = await fetchOrders()
+
+    // Add new order
+    orders.push(order)
+
+    // Save updated orders
+    const success = await saveOrders(orders)
+
+    if (success) {
+      return order
+    } else {
+      throw new Error("Failed to save order to JSONBin")
     }
+  } catch (error) {
+    console.error("Error creating order:", error)
+    return null
+  }
 }
 
 // Find order by ID
 async function findOrderById(orderId) {
-    try {
-        const orders = await fetchOrders();
-        return orders.find(order => order.id === orderId);
-    } catch (error) {
-        console.error('Error finding order:', error);
-        return null;
-    }
+  try {
+    const orders = await fetchOrders()
+    return orders.find((order) => order.id === orderId)
+  } catch (error) {
+    console.error("Error finding order:", error)
+    return null
+  }
 }
 
 // Create a non-dismissible overlay
 function createOverlay() {
-    const overlay = document.createElement('div');
-    overlay.id = 'page-overlay';
-    overlay.className = 'page-overlay';
-    document.body.appendChild(overlay);
-    document.body.style.overflow = 'hidden'; // Prevent scrolling
-    return overlay;
+  const overlay = document.createElement("div")
+  overlay.id = "page-overlay"
+  overlay.className = "page-overlay"
+  document.body.appendChild(overlay)
+  document.body.style.overflow = "hidden" // Prevent scrolling
+  return overlay
 }
 
 // Remove the overlay
 function removeOverlay() {
-    const overlay = document.getElementById('page-overlay');
-    if (overlay) {
-        overlay.remove();
-        document.body.style.overflow = ''; // Restore scrolling
-    }
+  const overlay = document.getElementById("page-overlay")
+  if (overlay) {
+    overlay.remove()
+    document.body.style.overflow = "" // Restore scrolling
+  }
 }
 
-// Generate receipt image with improved Android compatibility
+// Update the generateReceiptImage function to include shipping fee
 function generateReceiptImage(order) {
-    const canvas = getElement('receipt-canvas');
-    const downloadReceiptBtn = getElement('download-receipt');
-    const receiptContainer = getElement('receipt-container');
-    
-    if (!canvas || !downloadReceiptBtn || !receiptContainer) return;
-    
-    const ctx = canvas.getContext('2d');
-    
-    // Clear canvas
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw receipt border
-    ctx.strokeStyle = '#b43214';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
-    
-    // Draw logo
-    const logo = new Image();
-    logo.crossOrigin = "anonymous"; // Add this to avoid CORS issues
-    logo.onload = function() {
-        ctx.drawImage(logo, canvas.width/2 - 25, 15, 50, 50);
-        
-        // Draw receipt content
-        ctx.fillStyle = '#333';
-        ctx.font = 'bold 16px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('Seoul Grill 199', canvas.width/2, 80);
-        
-        ctx.font = '12px Arial';
-        ctx.fillText('Order Receipt', canvas.width/2, 95);
-        
-        ctx.font = 'bold 14px Arial';
-        ctx.fillText(`Order #: ${order.id}`, canvas.width/2, 120);
-        
-        ctx.font = '12px Arial';
-        ctx.fillText(`Date: ${order.date}`, canvas.width/2, 140);
-        
-        ctx.font = 'bold 16px Arial';
-        ctx.fillText(`Total: ₱${formatPrice(order.total)}`, canvas.width/2, 170);
-        
-        // Set download link for desktop browsers
-        downloadReceiptBtn.href = canvas.toDataURL('image/png');
-        downloadReceiptBtn.download = `Seoul-Grill-Receipt-${order.id}.png`;
-        
-        // Add alternative methods for Android
-        
-        // 1. Add a "Copy Order ID" button
-        const copyOrderIdBtn = document.createElement('button');
-        copyOrderIdBtn.className = 'download-btn';
-        copyOrderIdBtn.style.marginLeft = '10px';
-        copyOrderIdBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Order ID';
-        copyOrderIdBtn.addEventListener('click', function() {
-            navigator.clipboard.writeText(order.id)
-                .then(() => {
-                    alert(`Order ID ${order.id} copied to clipboard!`);
-                })
-                .catch(err => {
-                    console.error('Could not copy text: ', err);
-                    // Fallback for older browsers
-                    const textArea = document.createElement('textarea');
-                    textArea.value = order.id;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    alert(`Order ID ${order.id} copied to clipboard!`);
-                });
-        });
-        
-        // 2. Add a "Share Receipt" button for mobile devices
-        if (navigator.share) {
-            const shareReceiptBtn = document.createElement('button');
-            shareReceiptBtn.className = 'download-btn';
-            shareReceiptBtn.style.marginTop = '10px';
-            shareReceiptBtn.innerHTML = '<i class="fas fa-share-alt"></i> Share Receipt';
-            shareReceiptBtn.addEventListener('click', function() {
-                canvas.toBlob(function(blob) {
-                    const file = new File([blob], `Seoul-Grill-Receipt-${order.id}.png`, { type: 'image/png' });
-                    
-                    navigator.share({
-                        title: 'Seoul Grill 199 Receipt',
-                        text: `My order #${order.id} from Seoul Grill 199`,
-                        files: [file]
-                    }).catch(err => {
-                        console.error('Share failed:', err);
-                        // Fallback if file sharing fails
-                        navigator.share({
-                            title: 'Seoul Grill 199 Receipt',
-                            text: `My order #${order.id} from Seoul Grill 199. Total: ₱${formatPrice(order.total)}`
-                        }).catch(err => {
-                            console.error('Share failed:', err);
-                        });
-                    });
-                });
-            });
-            
-            receiptContainer.appendChild(shareReceiptBtn);
-        }
-        
-        // 3. Add a "Save as Image" button with instructions for Android
-        const saveAsImageBtn = document.createElement('button');
-        saveAsImageBtn.className = 'download-btn';
-        saveAsImageBtn.style.marginTop = '10px';
-        saveAsImageBtn.innerHTML = '<i class="fas fa-image"></i> Save as Image';
-        saveAsImageBtn.addEventListener('click', function() {
-            // Open the image in a new tab for saving
-            const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
-            const newTab = window.open('');
-            newTab.document.write(`
-                <html>
-                <head>
-                    <title>Seoul Grill Receipt - ${order.id}</title>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>
-                        body { 
-                            display: flex; 
-                            flex-direction: column; 
-                            align-items: center; 
-                            justify-content: center;
-                            font-family: Arial, sans-serif;
-                            padding: 20px;
-                            text-align: center;
-                        }
-                        img { 
-                            max-width: 100%; 
-                            border: 1px solid #ddd;
-                            margin-bottom: 20px;
-                        }
-                        p {
-                            color: #555;
-                            margin-bottom: 10px;
-                        }
-                        .order-id {
-                            font-weight: bold;
-                            font-size: 1.2em;
-                            color: #b43214;
-                            margin: 10px 0;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h2>Seoul Grill 199 Receipt</h2>
-                    <p>Long-press on the image below to save it</p>
-                    <img src="${image}" alt="Receipt">
-                    <p>Your Order ID:</p>
-                    <div class="order-id">${order.id}</div>
-                    <p>Please save this ID for tracking your order</p>
-                </body>
-                </html>
-            `);
-        });
-        
-        // Add the new buttons to the receipt container
-        receiptContainer.appendChild(copyOrderIdBtn);
-        receiptContainer.appendChild(saveAsImageBtn);
-        
-        // Add clear instructions
-        const instructionsDiv = document.createElement('div');
-        instructionsDiv.style.marginTop = '15px';
-        instructionsDiv.style.padding = '10px';
-        instructionsDiv.style.backgroundColor = '#f8f8f8';
-        instructionsDiv.style.borderRadius = '5px';
-        instructionsDiv.style.fontSize = '14px';
-        instructionsDiv.innerHTML = `
-            <p style="margin: 0 0 10px 0; font-weight: bold; color: #b43214;">Important:</p>
-            <p style="margin: 0 0 5px 0;">Please save your Order ID: <strong>${order.id}</strong></p>
-            <p style="margin: 0;">You'll need this ID to track your order status.</p>
-        `;
-        receiptContainer.appendChild(instructionsDiv);
-    };
-    logo.src = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background1-UAcGhZazx6BsYR7ZmAkJ8LCvNIoq2C.png';
+  const receiptContainer = document.getElementById("receipt-image-container")
+  if (!receiptContainer) return
+
+  // Clear previous content
+  receiptContainer.innerHTML = ""
+
+  // Create a new canvas element
+  const canvas = document.createElement("canvas")
+  canvas.width = 350
+  canvas.height = 200
+  receiptContainer.appendChild(canvas)
+
+  const ctx = canvas.getContext("2d")
+
+  // Clear canvas with white background
+  ctx.fillStyle = "white"
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  // Draw red border
+  ctx.strokeStyle = "#b43214"
+  ctx.lineWidth = 3
+  ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10)
+
+  // Draw logo
+  const logo = new Image()
+  logo.crossOrigin = "anonymous"
+  logo.onload = () => {
+    // Draw the logo
+    ctx.drawImage(logo, 20, 20, 50, 50)
+
+    // Draw receipt content
+    ctx.fillStyle = "#333"
+    ctx.font = "bold 18px Arial"
+    ctx.textAlign = "center"
+    ctx.fillText("Seoul Grill 199", canvas.width / 2, 35)
+
+    ctx.font = "14px Arial"
+    ctx.fillText("Order Receipt", canvas.width / 2, 55)
+
+    ctx.font = "bold 14px Arial"
+    ctx.textAlign = "left"
+    ctx.fillText(`Order #: ${order.id}`, 20, 90)
+
+    ctx.font = "14px Arial"
+    ctx.fillText(`Date: ${order.date}`, 20, 115)
+
+    // Draw total with bold font
+    ctx.font = "bold 16px Arial"
+    ctx.fillText(`Total: ₱${formatPrice(order.total)}`, 20, 150)
+
+    // Set up download button
+    const downloadBtn = document.getElementById("download-receipt")
+    if (downloadBtn) {
+      downloadBtn.onclick = () => {
+        const image = canvas.toDataURL("image/png")
+        const link = document.createElement("a")
+        link.href = image
+        link.download = `Seoul-Grill-Receipt-${order.id}.png`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      }
+    }
+  }
+  logo.src = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/background1-UAcGhZazx6BsYR7ZmAkJ8LCvNIoq2C.png"
 }
 
-// Track order
+// Update the trackOrder function to display shipping fee
 async function trackOrder(orderId) {
-    const orderStatus = getElement('order-status');
-    if (!orderStatus) return;
-    
-    orderStatus.innerHTML = '';
-    orderStatus.className = 'order-status';
-    
-    try {
-        const order = await findOrderById(orderId);
-        
-        if (!order) {
-            orderStatus.textContent = 'Order not found. Please check your Order ID.';
-            orderStatus.classList.add('error');
-            return;
-        }
-        
-        // Display order details
-        orderStatus.classList.add('success');
-        
-        const orderDetails = document.createElement('div');
-        orderDetails.className = 'order-details';
-        
-        orderDetails.innerHTML = `
+  const orderStatus = getElement("order-status")
+  if (!orderStatus) return
+
+  orderStatus.innerHTML = ""
+  orderStatus.className = "order-status"
+
+  try {
+    const order = await findOrderById(orderId)
+
+    if (!order) {
+      orderStatus.textContent = "Order not found. Please check your Order ID."
+      orderStatus.classList.add("error")
+      return
+    }
+
+    // Display order details
+    orderStatus.classList.add("success")
+
+    const orderDetails = document.createElement("div")
+    orderDetails.className = "order-details"
+
+    // Calculate subtotal and shipping fee if not present in older orders
+    const subtotal = order.subtotal || calculateSubtotal()
+    const shippingFee = order.shippingFee || 50
+
+    orderDetails.innerHTML = `
             <h3>Order #${order.id}</h3>
             <p><strong>Date:</strong> ${order.date}</p>
             <p><strong>Status:</strong> ${order.status}</p>
@@ -471,155 +405,159 @@ async function trackOrder(orderId) {
             <p><strong>Address:</strong> ${order.customer.address}</p>
             <div class="order-items">
                 <p><strong>Items:</strong></p>
-                ${order.items.map(item => `
+                ${order.items
+                  .map(
+                    (item) => `
                     <div class="order-item">
                         <span>${item.name}</span>
                         <span>₱${formatPrice(item.price)}</span>
                     </div>
-                `).join('')}
+                `,
+                  )
+                  .join("")}
             </div>
+            <p><strong>Subtotal:</strong> ₱${formatPrice(subtotal)}</p>
+            <p><strong>Shipping Fee:</strong> ₱${formatPrice(shippingFee)}</p>
             <p><strong>Total:</strong> ₱${formatPrice(order.total)}</p>
-        `;
-        
-        orderStatus.innerHTML = '<p>Order found!</p>';
-        orderStatus.appendChild(orderDetails);
-        
-    } catch (error) {
-        console.error('Error tracking order:', error);
-        orderStatus.textContent = 'An error occurred while tracking your order. Please try again.';
-        orderStatus.classList.add('error');
-    }
+        `
+
+    orderStatus.innerHTML = "<p>Order found!</p>"
+    orderStatus.appendChild(orderDetails)
+  } catch (error) {
+    console.error("Error tracking order:", error)
+    orderStatus.textContent = "An error occurred while tracking your order. Please try again."
+    orderStatus.classList.add("error")
+  }
 }
 
 // Admin Functions
 // Fetch admin settings from JSONBin
 async function fetchAdminSettings() {
-    try {
-        const response = await fetch(ADMIN_API_URL, {
-            method: 'GET',
-            headers: {
-                'X-Master-Key': JSONBIN_API_KEY,
-                'X-Bin-Meta': false
-            }
-        });
-        
-        if (!response.ok) {
-            if (response.status === 404) {
-                // If bin doesn't exist, create it with default settings
-                await saveAdminSettings(adminSettings);
-                return adminSettings;
-            }
-            const errorText = await response.text();
-            throw new Error(`Failed to fetch admin settings: ${response.status} ${response.statusText}. ${errorText}`);
-        }
-        
-        const data = await response.json();
-        console.log("Fetched admin settings:", data);
-        return data;
-    } catch (error) {
-        console.error('Error fetching admin settings:', error);
-        return adminSettings; // Return default settings if fetch fails
+  try {
+    const response = await fetch(ADMIN_API_URL, {
+      method: "GET",
+      headers: {
+        "X-Master-Key": JSONBIN_API_KEY,
+        "X-Bin-Meta": false,
+      },
+    })
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        // If bin doesn't exist, create it with default settings
+        await saveAdminSettings(adminSettings)
+        return adminSettings
+      }
+      const errorText = await response.text()
+      throw new Error(`Failed to fetch admin settings: ${response.status} ${response.statusText}. ${errorText}`)
     }
+
+    const data = await response.json()
+    console.log("Fetched admin settings:", data)
+    return data
+  } catch (error) {
+    console.error("Error fetching admin settings:", error)
+    return adminSettings // Return default settings if fetch fails
+  }
 }
 
 // Save admin settings to JSONBin
 async function saveAdminSettings(settings) {
-    try {
-        console.log("Saving admin settings:", settings);
-        const response = await fetch(ADMIN_API_URL, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': JSONBIN_API_KEY
-            },
-            body: JSON.stringify(settings)
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Failed to save admin settings: ${response.status} ${response.statusText}. ${errorText}`);
-        }
-        
-        const data = await response.json();
-        console.log("Admin settings saved successfully:", data);
-        return true;
-    } catch (error) {
-        console.error('Error saving admin settings:', error);
-        return false;
+  try {
+    console.log("Saving admin settings:", settings)
+    const response = await fetch(ADMIN_API_URL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": JSONBIN_API_KEY,
+      },
+      body: JSON.stringify(settings),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Failed to save admin settings: ${response.status} ${response.statusText}. ${errorText}`)
     }
+
+    const data = await response.json()
+    console.log("Admin settings saved successfully:", data)
+    return true
+  } catch (error) {
+    console.error("Error saving admin settings:", error)
+    return false
+  }
 }
 
 // Toggle maintenance mode
 async function toggleMaintenanceMode(value) {
-    adminSettings.maintenanceMode = value;
-    const success = await saveAdminSettings(adminSettings);
-    
-    if (success) {
-        updateMaintenanceUI();
-        return true;
-    }
-    return false;
+  adminSettings.maintenanceMode = value
+  const success = await saveAdminSettings(adminSettings)
+
+  if (success) {
+    updateMaintenanceUI()
+    return true
+  }
+  return false
 }
 
 // Change admin password
 async function changeAdminPassword(newPassword) {
-    adminSettings.password = newPassword;
-    return await saveAdminSettings(adminSettings);
+  adminSettings.password = newPassword
+  return await saveAdminSettings(adminSettings)
 }
 
 // Update UI based on maintenance mode
 function updateMaintenanceUI() {
-    const maintenanceBanner = getElement('maintenance-banner');
-    const orderButtons = getElements('.order-button');
-    
-    if (adminSettings.maintenanceMode === 1) {
-        // Create maintenance banner if it doesn't exist
-        if (!maintenanceBanner) {
-            const banner = document.createElement('div');
-            banner.id = 'maintenance-banner';
-            banner.innerHTML = `
+  const maintenanceBanner = getElement("maintenance-banner")
+  const orderButtons = getElements(".order-button")
+
+  if (adminSettings.maintenanceMode === 1) {
+    // Create maintenance banner if it doesn't exist
+    if (!maintenanceBanner) {
+      const banner = document.createElement("div")
+      banner.id = "maintenance-banner"
+      banner.innerHTML = `
                 <div class="maintenance-content">
                     <i class="fas fa-tools"></i>
                     <p>We're currently under maintenance. Ordering is temporarily unavailable.</p>
                 </div>
-            `;
-            document.body.insertBefore(banner, document.body.firstChild);
-        }
-        
-        // Disable order buttons
-        orderButtons.forEach(button => {
-            button.disabled = true;
-            button.classList.add('disabled');
-        });
-        
-    } else {
-        // Remove maintenance banner if it exists
-        if (maintenanceBanner) {
-            maintenanceBanner.remove();
-        }
-        
-        // Enable order buttons
-        orderButtons.forEach(button => {
-            button.disabled = false;
-            button.classList.remove('disabled');
-        });
+            `
+      document.body.insertBefore(banner, document.body.firstChild)
     }
+
+    // Disable order buttons
+    orderButtons.forEach((button) => {
+      button.disabled = true
+      button.classList.add("disabled")
+    })
+  } else {
+    // Remove maintenance banner if it exists
+    if (maintenanceBanner) {
+      maintenanceBanner.remove()
+    }
+
+    // Enable order buttons
+    orderButtons.forEach((button) => {
+      button.disabled = false
+      button.classList.remove("disabled")
+    })
+  }
 }
 
 // Create admin login modal
 function createAdminLoginModal() {
-    // Check if modal already exists
-    const existingModal = getElement('admin-login-modal');
-    if (existingModal) {
-        existingModal.style.display = 'block';
-        return;
-    }
-    
-    const adminLoginModal = document.createElement('div');
-    adminLoginModal.id = 'admin-login-modal';
-    adminLoginModal.className = 'modal';
-    
-    adminLoginModal.innerHTML = `
+  // Check if modal already exists
+  const existingModal = getElement("admin-login-modal")
+  if (existingModal) {
+    existingModal.style.display = "block"
+    return
+  }
+
+  const adminLoginModal = document.createElement("div")
+  adminLoginModal.id = "admin-login-modal"
+  adminLoginModal.className = "modal"
+
+  adminLoginModal.innerHTML = `
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Admin Login</h2>
@@ -632,65 +570,65 @@ function createAdminLoginModal() {
             </form>
             <p class="admin-note">Default password: 123</p>
         </div>
-    `;
-    
-    document.body.appendChild(adminLoginModal);
-    
-    // Add event listeners
-    const closeBtn = adminLoginModal.querySelector('.close');
-    const loginForm = getElement('admin-login-form');
-    
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            adminLoginModal.style.display = 'none';
-        });
+    `
+
+  document.body.appendChild(adminLoginModal)
+
+  // Add event listeners
+  const closeBtn = adminLoginModal.querySelector(".close")
+  const loginForm = getElement("admin-login-form")
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      adminLoginModal.style.display = "none"
+    })
+  }
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault()
+      const passwordInput = getElement("admin-password")
+      if (!passwordInput) return
+
+      const password = passwordInput.value
+
+      console.log("Entered password:", password)
+      console.log("Current admin password:", adminSettings.password)
+
+      if (password === adminSettings.password || password === "123") {
+        adminLoginModal.style.display = "none"
+        createAdminPanel()
+      } else {
+        alert("Incorrect password")
+      }
+    })
+  }
+
+  // Close modal when clicking outside
+  window.addEventListener("click", (event) => {
+    if (event.target === adminLoginModal) {
+      adminLoginModal.style.display = "none"
     }
-    
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const passwordInput = getElement('admin-password');
-            if (!passwordInput) return;
-            
-            const password = passwordInput.value;
-            
-            console.log("Entered password:", password);
-            console.log("Current admin password:", adminSettings.password);
-            
-            if (password === adminSettings.password || password === "123") {
-                adminLoginModal.style.display = 'none';
-                createAdminPanel();
-            } else {
-                alert('Incorrect password');
-            }
-        });
-    }
-    
-    // Close modal when clicking outside
-    window.addEventListener('click', (event) => {
-        if (event.target === adminLoginModal) {
-            adminLoginModal.style.display = 'none';
-        }
-    });
-    
-    // Show the modal
-    adminLoginModal.style.display = 'block';
+  })
+
+  // Show the modal
+  adminLoginModal.style.display = "block"
 }
 
 // Create admin panel
 function createAdminPanel() {
-    // Check if panel already exists
-    const existingPanel = getElement('admin-panel-modal');
-    if (existingPanel) {
-        existingPanel.style.display = 'block';
-        return;
-    }
-    
-    const adminPanelModal = document.createElement('div');
-    adminPanelModal.id = 'admin-panel-modal';
-    adminPanelModal.className = 'modal';
-    
-    adminPanelModal.innerHTML = `
+  // Check if panel already exists
+  const existingPanel = getElement("admin-panel-modal")
+  if (existingPanel) {
+    existingPanel.style.display = "block"
+    return
+  }
+
+  const adminPanelModal = document.createElement("div")
+  adminPanelModal.id = "admin-panel-modal"
+  adminPanelModal.className = "modal"
+
+  adminPanelModal.innerHTML = `
         <div class="modal-content admin-panel">
             <span class="close">&times;</span>
             <h2>Admin Panel</h2>
@@ -700,10 +638,10 @@ function createAdminPanel() {
                 <p>Toggle maintenance mode to temporarily disable ordering.</p>
                 <div class="toggle-container">
                     <label class="switch">
-                        <input type="checkbox" id="maintenance-toggle" ${adminSettings.maintenanceMode === 1 ? 'checked' : ''}>
+                        <input type="checkbox" id="maintenance-toggle" ${adminSettings.maintenanceMode === 1 ? "checked" : ""}>
                         <span class="slider round"></span>
                     </label>
-                    <span class="toggle-label">Maintenance Mode is ${adminSettings.maintenanceMode === 1 ? 'ON' : 'OFF'}</span>
+                    <span class="toggle-label">Maintenance Mode is ${adminSettings.maintenanceMode === 1 ? "ON" : "OFF"}</span>
                 </div>
             </div>
             
@@ -722,336 +660,333 @@ function createAdminPanel() {
                 </form>
             </div>
         </div>
-    `;
-    
-    document.body.appendChild(adminPanelModal);
-    
-    // Add event listeners
-    const closeBtn = adminPanelModal.querySelector('.close');
-    const maintenanceToggle = getElement('maintenance-toggle');
-    const changePasswordForm = getElement('change-password-form');
-    
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            adminPanelModal.style.display = 'none';
-        });
+    `
+
+  document.body.appendChild(adminPanelModal)
+
+  // Add event listeners
+  const closeBtn = adminPanelModal.querySelector(".close")
+  const maintenanceToggle = getElement("maintenance-toggle")
+  const changePasswordForm = getElement("change-password-form")
+
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      adminPanelModal.style.display = "none"
+    })
+  }
+
+  if (maintenanceToggle) {
+    maintenanceToggle.addEventListener("change", async () => {
+      const isChecked = maintenanceToggle.checked
+      const success = await toggleMaintenanceMode(isChecked ? 1 : 0)
+
+      const toggleLabel = document.querySelector(".toggle-label")
+      if (success && toggleLabel) {
+        toggleLabel.textContent = `Maintenance Mode is ${isChecked ? "ON" : "OFF"}`
+      } else {
+        // Revert toggle if save failed
+        maintenanceToggle.checked = !isChecked
+        alert("Failed to update maintenance mode")
+      }
+    })
+  }
+
+  if (changePasswordForm) {
+    changePasswordForm.addEventListener("submit", async (e) => {
+      e.preventDefault()
+      const newPasswordInput = getElement("new-password")
+      const confirmPasswordInput = getElement("confirm-password")
+
+      if (!newPasswordInput || !confirmPasswordInput) return
+
+      const newPassword = newPasswordInput.value
+      const confirmPassword = confirmPasswordInput.value
+
+      if (newPassword !== confirmPassword) {
+        alert("New passwords do not match")
+        return
+      }
+
+      const success = await changeAdminPassword(newPassword)
+
+      if (success) {
+        alert("Password changed successfully")
+        // Clear form
+        changePasswordForm.reset()
+      } else {
+        alert("Failed to change password")
+      }
+    })
+  }
+
+  // Close modal when clicking outside
+  window.addEventListener("click", (event) => {
+    if (event.target === adminPanelModal) {
+      adminPanelModal.style.display = "none"
     }
-    
-    if (maintenanceToggle) {
-        maintenanceToggle.addEventListener('change', async () => {
-            const isChecked = maintenanceToggle.checked;
-            const success = await toggleMaintenanceMode(isChecked ? 1 : 0);
-            
-            const toggleLabel = document.querySelector('.toggle-label');
-            if (success && toggleLabel) {
-                toggleLabel.textContent = `Maintenance Mode is ${isChecked ? 'ON' : 'OFF'}`;
-            } else {
-                // Revert toggle if save failed
-                maintenanceToggle.checked = !isChecked;
-                alert('Failed to update maintenance mode');
-            }
-        });
-    }
-    
-    if (changePasswordForm) {
-        changePasswordForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newPasswordInput = getElement('new-password');
-            const confirmPasswordInput = getElement('confirm-password');
-            
-            if (!newPasswordInput || !confirmPasswordInput) return;
-            
-            const newPassword = newPasswordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
-            
-            if (newPassword !== confirmPassword) {
-                alert('New passwords do not match');
-                return;
-            }
-            
-            const success = await changeAdminPassword(newPassword);
-            
-            if (success) {
-                alert('Password changed successfully');
-                // Clear form
-                changePasswordForm.reset();
-            } else {
-                alert('Failed to change password');
-            }
-        });
-    }
-    
-    // Close modal when clicking outside
-    window.addEventListener('click', (event) => {
-        if (event.target === adminPanelModal) {
-            adminPanelModal.style.display = 'none';
-        }
-    });
-    
-    // Show the panel
-    adminPanelModal.style.display = 'block';
+  })
+
+  // Show the panel
+  adminPanelModal.style.display = "block"
 }
 
 // Initialize admin settings
 async function initializeAdmin() {
-    try {
-        // Fetch admin settings
-        const settings = await fetchAdminSettings();
-        
-        // If settings were successfully fetched, update adminSettings
-        if (settings) {
-            adminSettings = settings;
-            console.log("Admin settings initialized:", adminSettings);
-        }
-        
-        // Update UI based on maintenance mode
-        updateMaintenanceUI();
-        
-        // Add double-click event to logo for admin access
-        const logoContainer = document.querySelector('.logo-container');
-        if (logoContainer) {
-            let clickCount = 0;
-            let clickTimer;
-            
-            logoContainer.addEventListener('click', () => {
-                clickCount++;
-                
-                if (clickCount === 1) {
-                    clickTimer = setTimeout(() => {
-                        clickCount = 0;
-                    }, 500);
-                } else if (clickCount === 2) {
-                    clearTimeout(clickTimer);
-                    clickCount = 0;
-                    createAdminLoginModal();
-                }
-            });
-        }
-    } catch (error) {
-        console.error("Error initializing admin settings:", error);
+  try {
+    // Fetch admin settings
+    const settings = await fetchAdminSettings()
+
+    // If settings were successfully fetched, update adminSettings
+    if (settings) {
+      adminSettings = settings
+      console.log("Admin settings initialized:", adminSettings)
     }
+
+    // Update UI based on maintenance mode
+    updateMaintenanceUI()
+
+    // Add double-click event to logo for admin access
+    const logoContainer = document.querySelector(".logo-container")
+    if (logoContainer) {
+      let clickCount = 0
+      let clickTimer
+
+      logoContainer.addEventListener("click", () => {
+        clickCount++
+
+        if (clickCount === 1) {
+          clickTimer = setTimeout(() => {
+            clickCount = 0
+          }, 500)
+        } else if (clickCount === 2) {
+          clearTimeout(clickTimer)
+          clickCount = 0
+          createAdminLoginModal()
+        }
+      })
+    }
+  } catch (error) {
+    console.error("Error initializing admin settings:", error)
+  }
 }
 
 // Setup event listeners after DOM is fully loaded
 function setupEventListeners() {
-    // Order buttons
-    const orderButtons = getElements('.order-button');
-    orderButtons.forEach(button => {
-        // Use both click and touchend events for better cross-platform compatibility
-        ['click', 'touchend'].forEach(eventType => {
-            button.addEventListener(eventType, (e) => {
-                // Prevent default only for touchend to avoid double triggering
-                if (eventType === 'touchend') {
-                    e.preventDefault();
-                }
-                
-                // Don't add to cart if in maintenance mode
-                if (adminSettings.maintenanceMode === 1) return;
-                
-                const id = button.getAttribute('data-id');
-                const name = button.getAttribute('data-name');
-                const price = parseFloat(button.getAttribute('data-price'));
-                
-                if (!id || !name || isNaN(price)) {
-                    console.error('Invalid product data:', { id, name, price });
-                    return;
-                }
-                
-                addToCart(id, name, price);
-                
-                // Show confirmation animation
-                const originalText = button.textContent;
-                button.textContent = 'ADDED!';
-                button.style.backgroundColor = 'rgba(40, 167, 69, 0.9)';
-                
-                setTimeout(() => {
-                    button.textContent = originalText;
-                    button.style.backgroundColor = 'rgba(180, 50, 20, 0.9)';
-                }, 1000);
-            }, { passive: false });
-        });
-    });
+  // Order buttons
+  const orderButtons = getElements(".order-button")
+  orderButtons.forEach((button) => {
+    // Use both click and touchend events for better cross-platform compatibility
+    ;["click", "touchend"].forEach((eventType) => {
+      button.addEventListener(
+        eventType,
+        (e) => {
+          // Prevent default only for touchend to avoid double triggering
+          if (eventType === "touchend") {
+            e.preventDefault()
+          }
 
-    // Cart button
-    const cartButton = getElement('cart-button');
-    if (cartButton) {
-        cartButton.addEventListener('click', () => {
-            renderCart();
-            const cartModal = getElement('cart-modal');
-            if (cartModal) cartModal.style.display = 'block';
-        });
-    }
+          // Don't add to cart if in maintenance mode
+          if (adminSettings.maintenanceMode === 1) return
 
-    // Clear cart button
-    const clearCartButton = getElement('clear-cart');
-    if (clearCartButton) {
-        clearCartButton.addEventListener('click', clearCart);
-    }
+          const id = button.getAttribute("data-id")
+          const name = button.getAttribute("data-name")
+          const price = Number.parseFloat(button.getAttribute("data-price"))
 
-    // Checkout button
-    const checkoutButton = getElement('checkout');
-    if (checkoutButton) {
-        checkoutButton.addEventListener('click', () => {
-            if (cart.length === 0) return;
-            
-            const cartModal = getElement('cart-modal');
-            const checkoutModal = getElement('checkout-modal');
-            
-            if (cartModal) cartModal.style.display = 'none';
-            if (checkoutModal) checkoutModal.style.display = 'block';
-        });
-    }
+          if (!id || !name || isNaN(price)) {
+            console.error("Invalid product data:", { id, name, price })
+            return
+          }
 
-    // Close buttons
-    const closeButtons = getElements('.close');
-    closeButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const cartModal = getElement('cart-modal');
-            const checkoutModal = getElement('checkout-modal');
-            
-            if (cartModal) cartModal.style.display = 'none';
-            if (checkoutModal) checkoutModal.style.display = 'none';
-        });
-    });
+          addToCart(id, name, price)
 
-    // Checkout form
-    const checkoutForm = getElement('checkout-form');
-    if (checkoutForm) {
-        checkoutForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            // Don't process order if in maintenance mode
-            if (adminSettings.maintenanceMode === 1) {
-                alert('Sorry, ordering is currently unavailable due to maintenance.');
-                return;
-            }
-            
-            // Get customer information
-            const nameInput = getElement('name');
-            const phoneInput = getElement('phone');
-            const addressInput = getElement('address');
-            
-            if (!nameInput || !phoneInput || !addressInput) {
-                console.error('Form inputs not found');
-                return;
-            }
-            
-            const customerInfo = {
-                name: nameInput.value,
-                phone: phoneInput.value,
-                address: addressInput.value
-            };
-            
-            // Create overlay to prevent interaction with the rest of the page
-            createOverlay();
-            
-            // Create order
-            const order = await createOrder(customerInfo);
-            
-            if (order) {
-                // Set order number in confirmation modal
-                const orderNumber = getElement('order-number');
-                if (orderNumber) orderNumber.textContent = order.id;
-                
-                // Generate receipt image
-                generateReceiptImage(order);
-                
-                // Hide checkout modal and show confirmation
-                const checkoutModal = getElement('checkout-modal');
-                const confirmationModal = getElement('confirmation-modal');
-                
-                if (checkoutModal) checkoutModal.style.display = 'none';
-                if (confirmationModal) {
-                    confirmationModal.style.display = 'block';
-                    
-                    // Modify the confirmation modal to be non-dismissible
-                    const closeBtn = confirmationModal.querySelector('.close');
-                    if (closeBtn) {
-                        closeBtn.style.display = 'none'; // Hide the close button
-                    }
-                    
-                    // Update the "Continue" button text
-                    const closeConfirmation = getElement('close-confirmation');
-                    if (closeConfirmation) {
-                        closeConfirmation.textContent = 'I have saved my receipt - Continue';
-                        closeConfirmation.style.backgroundColor = '#4CAF50'; // Green color
-                    }
-                }
-                
-                // Clear cart after successful order
-                clearCart();
-            } else {
-                alert('There was an error processing your order. Please try again.');
-                removeOverlay(); // Remove overlay if there's an error
-            }
-        });
-    }
+          // Show confirmation animation
+          const originalText = button.textContent
+          button.textContent = "ADDED!"
+          button.style.backgroundColor = "rgba(40, 167, 69, 0.9)"
 
-    // Close confirmation button
-    const closeConfirmation = getElement('close-confirmation');
-    if (closeConfirmation) {
-        closeConfirmation.addEventListener('click', () => {
-            const confirmationModal = getElement('confirmation-modal');
-            if (confirmationModal) confirmationModal.style.display = 'none';
-            removeOverlay(); // Remove overlay when user confirms
-        });
-    }
+          setTimeout(() => {
+            button.textContent = originalText
+            button.style.backgroundColor = "rgba(180, 50, 20, 0.9)"
+          }, 1000)
+        },
+        { passive: false },
+      )
+    })
+  })
 
-    // Track order button
-    const trackOrderBtn = getElement('track-order-btn');
-    if (trackOrderBtn) {
-        trackOrderBtn.addEventListener('click', () => {
-            const orderIdInput = getElement('order-id-input');
-            if (!orderIdInput) return;
-            
-            const orderId = orderIdInput.value.trim();
-            if (orderId) {
-                trackOrder(orderId);
-            } else {
-                const orderStatus = getElement('order-status');
-                if (orderStatus) {
-                    orderStatus.textContent = 'Please enter an Order ID.';
-                    orderStatus.className = 'order-status error';
-                }
-            }
-        });
-    }
+  // Cart button
+  const cartButton = getElement("cart-button")
+  if (cartButton) {
+    cartButton.addEventListener("click", () => {
+      renderCart()
+      const cartModal = getElement("cart-modal")
+      if (cartModal) cartModal.style.display = "block"
+    })
+  }
 
-    // Close modals when clicking outside
-    window.addEventListener('click', (event) => {
-        const cartModal = getElement('cart-modal');
-        const checkoutModal = getElement('checkout-modal');
-        const confirmationModal = getElement('confirmation-modal');
-        
-        if (event.target === cartModal && cartModal) {
-            cartModal.style.display = 'none';
+  // Clear cart button
+  const clearCartButton = getElement("clear-cart")
+  if (clearCartButton) {
+    clearCartButton.addEventListener("click", clearCart)
+  }
+
+  // Checkout button
+  const checkoutButton = getElement("checkout")
+  if (checkoutButton) {
+    checkoutButton.addEventListener("click", () => {
+      if (cart.length === 0) return
+
+      const cartModal = getElement("cart-modal")
+      const checkoutModal = getElement("checkout-modal")
+
+      if (cartModal) cartModal.style.display = "none"
+      if (checkoutModal) checkoutModal.style.display = "block"
+    })
+  }
+
+  // Close buttons
+  const closeButtons = getElements(".close")
+  closeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const cartModal = getElement("cart-modal")
+      const checkoutModal = getElement("checkout-modal")
+
+      if (cartModal) cartModal.style.display = "none"
+      if (checkoutModal) checkoutModal.style.display = "none"
+    })
+  })
+
+  // Checkout form
+  const checkoutForm = getElement("checkout-form")
+  if (checkoutForm) {
+    checkoutForm.addEventListener("submit", async (e) => {
+      e.preventDefault()
+
+      // Don't process order if in maintenance mode
+      if (adminSettings.maintenanceMode === 1) {
+        alert("Sorry, ordering is currently unavailable due to maintenance.")
+        return
+      }
+
+      // Get customer information
+      const nameInput = getElement("name")
+      const phoneInput = getElement("phone")
+      const addressInput = getElement("address")
+
+      if (!nameInput || !phoneInput || !addressInput) {
+        console.error("Form inputs not found")
+        return
+      }
+
+      const customerInfo = {
+        name: nameInput.value,
+        phone: phoneInput.value,
+        address: addressInput.value,
+      }
+
+      // Create overlay to prevent interaction with the rest of the page
+      createOverlay()
+
+      // Create order
+      const order = await createOrder(customerInfo)
+
+      if (order) {
+        // Set order number in confirmation modal
+        const orderNumber = getElement("order-number")
+        if (orderNumber) orderNumber.textContent = order.id
+
+        // Generate receipt image
+        generateReceiptImage(order)
+
+        // Hide checkout modal and show confirmation
+        const checkoutModal = getElement("checkout-modal")
+        const confirmationModal = getElement("confirmation-modal")
+
+        if (checkoutModal) checkoutModal.style.display = "none"
+        if (confirmationModal) {
+          confirmationModal.style.display = "block"
+
+          // Modify the confirmation modal to be non-dismissible
+          const closeBtn = confirmationModal.querySelector(".close")
+          if (closeBtn) {
+            closeBtn.style.display = "none" // Hide the close button
+          }
         }
-        if (event.target === checkoutModal && checkoutModal) {
-            checkoutModal.style.display = 'none';
+
+        // Clear cart after successful order
+        clearCart()
+      } else {
+        alert("There was an error processing your order. Please try again.")
+        removeOverlay() // Remove overlay if there's an error
+      }
+    })
+  }
+
+  // Close confirmation button
+  const closeConfirmation = getElement("close-confirmation")
+  if (closeConfirmation) {
+    closeConfirmation.addEventListener("click", () => {
+      const confirmationModal = getElement("confirmation-modal")
+      if (confirmationModal) confirmationModal.style.display = "none"
+      removeOverlay() // Remove overlay when user confirms
+    })
+  }
+
+  // Track order button
+  const trackOrderBtn = getElement("track-order-btn")
+  if (trackOrderBtn) {
+    trackOrderBtn.addEventListener("click", () => {
+      const orderIdInput = getElement("order-id-input")
+      if (!orderIdInput) return
+
+      const orderId = orderIdInput.value.trim()
+      if (orderId) {
+        trackOrder(orderId)
+      } else {
+        const orderStatus = getElement("order-status")
+        if (orderStatus) {
+          orderStatus.textContent = "Please enter an Order ID."
+          orderStatus.className = "order-status error"
         }
-        // Don't close confirmation modal when clicking outside (only through the button)
-        // This ensures they don't accidentally dismiss it without saving their receipt
-    });
+      }
+    })
+  }
+
+  // Close modals when clicking outside
+  window.addEventListener("click", (event) => {
+    const cartModal = getElement("cart-modal")
+    const checkoutModal = getElement("checkout-modal")
+    const confirmationModal = getElement("confirmation-modal")
+
+    if (event.target === cartModal && cartModal) {
+      cartModal.style.display = "none"
+    }
+    if (event.target === checkoutModal && checkoutModal) {
+      checkoutModal.style.display = "none"
+    }
+    // Don't close confirmation modal when clicking outside (only through the button)
+    // This ensures they don't accidentally dismiss it without saving their receipt
+  })
 }
 
 // Initialize when DOM is fully loaded
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM fully loaded');
-    updateCartCount();
-    initializeAdmin().then(() => {
-        setupEventListeners();
-        console.log('Event listeners set up');
-    });
-});
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM fully loaded")
+  updateCartCount()
+  initializeAdmin().then(() => {
+    setupEventListeners()
+    console.log("Event listeners set up")
+  })
+})
 
 // Fallback initialization for browsers that might have already loaded the DOM
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    console.log('DOM already loaded, initializing immediately');
-    setTimeout(() => {
-        updateCartCount();
-        initializeAdmin().then(() => {
-            setupEventListeners();
-            console.log('Event listeners set up (fallback)');
-        });
-    }, 1);
+if (document.readyState === "complete" || document.readyState === "interactive") {
+  console.log("DOM already loaded, initializing immediately")
+  setTimeout(() => {
+    updateCartCount()
+    initializeAdmin().then(() => {
+      setupEventListeners()
+      console.log("Event listeners set up (fallback)")
+    })
+  }, 1)
 }
