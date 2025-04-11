@@ -568,7 +568,7 @@ function createAdminLoginModal() {
                 </div>
                 <button type="submit">Login</button>
             </form>
-            <p class="admin-note">Default password: 123</p>
+            <p class="admin-note"></p>
         </div>
     `
 
