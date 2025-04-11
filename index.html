@@ -123,10 +123,12 @@
             <p>Thank you for your order. Your delicious Korean BBQ will be delivered soon!</p>
             <p>Order #: <span id="order-number"></span></p>
             <div class="receipt-container">
-                <canvas id="receipt-canvas" width="300" height="200"></canvas>
-                <a id="download-receipt" class="download-btn">Download Receipt</a>
+                <div id="receipt-image-container">
+                    <!-- Receipt will be rendered here -->
+                </div>
+                <button id="download-receipt" class="download-btn">Download Receipt</button>
             </div>
-            <button id="close-confirmation">OK</button>
+            <button id="close-confirmation">I have saved my receipt - Continue</button>
         </div>
     </div>
 
